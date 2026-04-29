@@ -1,7 +1,6 @@
 package chess;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Represents a single chess piece
@@ -53,12 +52,38 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        PieceMovesCalculator calculator;
+
+        //initialize suggested pieceMovesCalculator
+        PieceMovesCalculator calculator = null;
 
         switch (this.type)
         {
             case BISHOP:
                 calculator = new BishopMoves();
+                break;
+
+            case ROOK:
+                //calculator = new RookMoves();
+                break;
+
+            case QUEEN:
+                //calculator = new QueenMoves();
+                break;
+
+            case KING:
+                //calculator = new KingMoves();
+                break;
+
+            case KNIGHT:
+                //calculator = new KnightMoves();
+                break;
+
+            case PAWN:
+                //calculator = new PawnMoves();
+                break;
+
+            default:
+                throw new RuntimeException("Unknown piece type");
         }
         return calculator.pieceMoves(board, myPosition);
     }
