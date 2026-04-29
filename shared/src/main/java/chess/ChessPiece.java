@@ -67,7 +67,7 @@ public class ChessPiece {
                 break;
 
             case QUEEN:
-                //calculator = new QueenMoves();
+                calculator = new QueenMoves();
                 break;
 
             case KING:
@@ -83,7 +83,7 @@ public class ChessPiece {
                 break;
 
             default:
-                //should not get here
+                throw new RuntimeException("Unknown piece type");
         }
         return calculator.pieceMoves(board, myPosition);
     }

@@ -9,7 +9,7 @@ public class RookMoves implements PieceMovesCalculator {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition)
     {
 
-        //Set an array of where the bishop can move
+        //Set an array of where the rook can move
         Collection<ChessMove> moves = new ArrayList<>();
 
         //get necessary piece values and locations
