@@ -5,7 +5,8 @@ import java.util.Collection;
 
 public class BishopMoves implements PieceMovesCalculator {
     @Override
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition)
+    {
 
         //Set an array of where the bishop can move
         Collection<ChessMove> moves = new ArrayList<>();
@@ -20,12 +21,14 @@ public class BishopMoves implements PieceMovesCalculator {
         int [][] diagMoves = {{-1,-1}, {-1,1}, {1,-1}, {1,1}};
 
         //For loop to loop though movement options
-        for (int[] dir: diagMoves) {
+        for (int[] dir: diagMoves)
+        {
             int r = row + dir[0];
             int c = col + dir[1];
 
             // see if allowed continuous movement in this direction within the board
-            while (!(r<1) && !(r>8) && !(c<1) && !(c>8)){
+            while (!(r<1) && !(r>8) && !(c<1) && !(c>8))
+            {
 
                 //set new position
                 ChessPosition newPosition = new ChessPosition(r, c);
