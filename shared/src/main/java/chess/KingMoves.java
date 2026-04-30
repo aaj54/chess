@@ -25,6 +25,11 @@ public class KingMoves implements PieceMovesCalculator{
             int r = row + dir[0];
             int c = col + dir[1];
 
+            // bounds check
+            if (r < 1 || r > 8 || c < 1 || c > 8) {
+                continue;
+            }
+
             //set new position
             ChessPosition newPosition = new ChessPosition(r,c);
             ChessPiece newSpot = board.getPiece(newPosition);
@@ -42,7 +47,6 @@ public class KingMoves implements PieceMovesCalculator{
                 {
                     moves.add(new ChessMove(myPosition, newPosition, null));
                 }
-                break;
             }
         }
         return moves;
