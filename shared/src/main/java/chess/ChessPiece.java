@@ -79,7 +79,7 @@ public class ChessPiece {
                 break;
 
             case PAWN:
-                //calculator = new PawnMoves();
+                calculator = new PawnMoves();
                 break;
 
             default:
