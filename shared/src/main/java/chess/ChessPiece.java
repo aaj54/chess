@@ -71,7 +71,7 @@ public class ChessPiece {
                 break;
 
             case KING:
-                //calculator = new KingMoves();
+                calculator = new KingMoves();
                 break;
 
             case KNIGHT:
