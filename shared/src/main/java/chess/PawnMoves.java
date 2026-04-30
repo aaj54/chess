@@ -24,7 +24,7 @@ public class PawnMoves implements PieceMovesCalculator {
         if () {
             //For loop to loop though movement options
             for (int c : captureEnemy) {
-
+            ;
             }
 
         }
