@@ -25,7 +25,14 @@ public class PawnMoves implements PieceMovesCalculator {
             ChessPosition forward = new ChessPosition(newSpot, col);
 
             if (board.getPiece(forward) == null) {
-                moves.add(new ChessMove(myPosition, forward, null));
+                if ((newSpot == 8 && currentPlayerColor == ChessGame.TeamColor.WHITE) ||
+                        (newSpot == 1 && currentPlayerColor == ChessGame.TeamColor.BLACK))
+                {
+                    addPromotionMoves(moves, myPosition, forward);
+                }
+                else {
+                    moves.add(new ChessMove(myPosition, forward, null));
+                }
                 //Check to see if first move pawn on row 2 or 7
                 if ((row == 2 && currentPlayerColor == ChessGame.TeamColor.WHITE) ||
                         (row == 7 && currentPlayerColor == ChessGame.TeamColor.BLACK)) {
@@ -46,8 +53,17 @@ public class PawnMoves implements PieceMovesCalculator {
             ChessPosition captDiag = new ChessPosition(r, c);
             ChessPiece moveDiag = board.getPiece(captDiag);
 
-            if (moveDiag != null && moveDiag.getTeamColor() != currentPlayerColor) {
-                moves.add(new ChessMove(myPosition, captDiag, null));
+            if (moveDiag != null && moveDiag.getTeamColor() != currentPlayerColor)
+            {
+                if ((r == 8 && currentPlayerColor == ChessGame.TeamColor.WHITE) ||
+                        (r == 1 && currentPlayerColor == ChessGame.TeamColor.BLACK))
+                {
+                    addPromotionMoves(moves, myPosition, captDiag);
+                }
+                else
+                {
+                    moves.add(new ChessMove(myPosition, captDiag, null));
+                }
             }
         }
         return moves;
