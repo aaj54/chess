@@ -37,6 +37,25 @@ public class PawnMoves implements PieceMovesCalculator {
                 }
             }
         }
+        int capture[] = {col-1, col+1};
+        for (int c : capture)
+        {
+            int r  = row + direction;
+            if (r < 1 || r > 8 || c < 1 || c > 8) continue;
+
+            ChessPosition captDiag = new ChessPosition(r, c);
+            ChessPiece moveDiag = board.getPiece(captDiag);
+
+            if (moveDiag != null && moveDiag.getTeamColor() != currentPlayerColor) {
+                moves.add(new ChessMove(myPosition, captDiag, null));
+            }
+        }
         return moves;
+    }
+    private void addPromotionMoves(Collection<ChessMove> moves, ChessPosition from, ChessPosition to) {
+        moves.add(new ChessMove(from, to, ChessPiece.PieceType.QUEEN));
+        moves.add(new ChessMove(from, to, ChessPiece.PieceType.ROOK));
+        moves.add(new ChessMove(from, to, ChessPiece.PieceType.BISHOP));
+        moves.add(new ChessMove(from, to, ChessPiece.PieceType.KNIGHT));
     }
 }
