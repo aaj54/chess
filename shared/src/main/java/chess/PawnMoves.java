@@ -24,31 +24,18 @@ public class PawnMoves implements PieceMovesCalculator {
         {
             ChessPosition forward = new ChessPosition(newSpot, col);
 
-            //set new position
-            ChessPiece oneForward = board.getPiece(forward);
-
-            if(oneForward == null)
-            {
-                //add new location and piece to moves
-                moves.add(new ChessMove(myPosition, newPosition, null));
+            if (board.getPiece(forward) == null) {
+                moves.add(new ChessMove(myPosition, forward, null));
+                //Check to see if first move pawn on row 2 or 7
+                if ((row == 2 && currentPlayerColor == ChessGame.TeamColor.WHITE) ||
+                        (row == 7 && currentPlayerColor == ChessGame.TeamColor.BLACK)) {
+                    int moveTwice = row + 2 * direction;
+                    ChessPosition doubleForward = new ChessPosition(moveTwice, col);
+                    if (board.getPiece(doubleForward) == null) {
+                        moves.add(new ChessMove(myPosition, doubleForward, null));
+                    }
+                }
             }
-            //For loop to loop though movement options
-            for (int c : captureEnemy) {
-            ;
-            }
-
-        }
-        int[] captureEnemy = {col - 1, col + 1};
-        //Check to see if first move pawn on row 2 or 7
-        else if ((row == 2 && currentPlayerColor == ChessGame.TeamColor.WHITE) ||
-                (row == 7 && currentPlayerColor == ChessGame.TeamColor.BLACK)) {
-            int moveTwice = row + 2 * direction;
-            ChessPosition doubleForward = new ChessPosition(moveTwice, col);
-            if (board.getPiece(doubleForward) == null) {
-                moves.add(new ChessMove(myPosition, doubleForward, null));
-            }
-        } else {
-
         }
         return moves;
     }
