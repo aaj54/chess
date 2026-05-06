@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -9,12 +10,12 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
-    private ChessBoard setBoard;
+    private ChessBoard board;
     private TeamColor currentPlayerTurn;
 
     public ChessGame() {
-        setBoard = new ChessBoard();
-        setBoard.resetBoard();
+        board = new ChessBoard();
+        board.resetBoard();
         currentPlayerTurn = TeamColor.WHITE;
     }
 
@@ -50,7 +51,41 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        //Get the first piece
+        ChessPiece piece = board.getPiece(startPosition);
+
+        //if no piece selected return nothing
+        if (piece == null) { return null;}
+
+        //set collection of moves and of valid moves
+        Collection<ChessMove> allMoves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> validMoves = new ArrayList<>();
+
+        for (ChessMove mov: allMoves)
+        {
+            //copy board
+            ChessBoard copy = copyBoard(board);
+        }
+
+
+        return validMoves;
+    }
+
+    public ChessBoard copyBoard(ChessBoard originalBoard) {
+        ChessBoard copy = new ChessBoard();
+
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition currentPiecePos = new ChessPosition(row, col);
+                ChessPiece piece = originalBoard.getPiece(currentPiecePos);
+
+                if (piece != null) {
+                    copy.addPiece(currentPiecePos, piece); // may need deep copy depending on your design
+                }
+            }
+        }
+
+        return copy;
     }
 
     /**
@@ -59,8 +94,28 @@ public class ChessGame {
      * @param move chess move to perform
      * @throws InvalidMoveException if move is invalid
      */
+
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        //get start and stop position
+        ChessPosition start = move.getStartPosition();
+        ChessPosition stop = move.getEndPosition();
+
+        //get the piece at the start location
+        ChessPiece piece = board.getPiece(start);
+        Collection<ChessMove> availableMoves = validMoves(start);
+
+        //if no piece was chosen throw exception
+        if(piece == null)
+        {
+            throw new InvalidMoveException();
+        }
+
+        //enable move piece by clearing the start pos and puting the orig piece in stop pos
+        board.addPiece(stop, piece);
+        board.addPiece(start, null);
+
+        // switch player turns
+        currentPlayerTurn = (currentPlayerTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     /**
@@ -100,7 +155,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        this.setBoard = board;
+        this.board = board;
     }
 
     /**
@@ -109,6 +164,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
     }
 }
