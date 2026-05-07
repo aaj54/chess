@@ -137,7 +137,7 @@ public class ChessGame {
         Collection<ChessMove> availableMoves = validMoves(start);
 
         //if no available moves throw error
-        if (availableMoves == null || !availableMoves.contains(move)) {
+        if (!availableMoves.contains(move)) {
             throw new InvalidMoveException();
         }
 
@@ -147,6 +147,17 @@ public class ChessGame {
 
         // switch player turns
         currentPlayerTurn = (currentPlayerTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+
+        //add pawn promotion logic
+        if (move.getPromotionPiece() != null) {
+
+            //get the promotion piece
+            ChessPiece promotion = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+            board.addPiece(stop, promotion);
+        }
+        else {
+            board.addPiece(stop, piece);
+        }
     }
 
     /**
