@@ -15,6 +15,8 @@ public class ChessGame {
     private TeamColor currentPlayerTurn;
 
     public ChessGame() {
+
+        //set up board and set turn
         board = new ChessBoard();
         board.resetBoard();
         currentPlayerTurn = TeamColor.WHITE;
@@ -71,6 +73,17 @@ public class ChessGame {
         {
             //copy board
             ChessBoard copy = copyBoard(board);
+            ChessPiece movingPiece = copy.getPiece(mov.getStartPosition());
+
+            copy.addPiece(mov.getEndPosition(), movingPiece);
+            copy.addPiece(mov.getStartPosition(), null);
+
+            ChessGame tempGame = new ChessGame();
+            tempGame.setBoard(copy);
+
+            if (!tempGame.isInCheck(piece.getTeamColor())) {
+                validMoves.add(mov);
+            }
         }
 
 
@@ -115,16 +128,16 @@ public class ChessGame {
             throw new InvalidMoveException();
         }
 
-        Collection<ChessMove> availableMoves = validMoves(start);
-
-
-
-        if (availableMoves == null || !availableMoves.contains(move)) {
+        //if not your piece
+        if (piece.getTeamColor() != currentPlayerTurn) {
             throw new InvalidMoveException();
         }
 
-        //if not your piece
-        if (piece.getTeamColor() != currentPlayerTurn) {
+        //make collection on avaliable moves
+        Collection<ChessMove> availableMoves = validMoves(start);
+
+        //if no avaliable moves throw error
+        if (availableMoves == null || !availableMoves.contains(move)) {
             throw new InvalidMoveException();
         }
 
