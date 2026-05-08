@@ -120,7 +120,7 @@ public class ChessGame {
 
                 if (piece != null) {
                     ChessPiece copiedPiece = new ChessPiece(piece.getTeamColor(), piece.getPieceType());
-                    copiedPiece.setHasMoved(piece.hasMoved()); // ADD THIS
+                    copiedPiece.setHasMoved(piece.hasMoved());
                     copy.addPiece(currentPiecePos, copiedPiece);
                 }
             }
@@ -201,7 +201,7 @@ public class ChessGame {
 
             //add en pessant
             if (movingDiagonally && targetEmpty) {
-                // Remove the captured pawn (same row as attacker, same col as destination)
+                // Remove the captured pawn
                 board.addPiece(new ChessPosition(start.getRow(), stop.getColumn()), null);
             }
         }
