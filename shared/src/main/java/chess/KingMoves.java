@@ -24,15 +24,15 @@ public class KingMoves implements PieceMovesCalculator{
 
         // look to see their can be castling
         if (!piece.hasMoved()) {
-            Castling(board, myPosition, piece.getTeamColor(), moves, true);  // kingside
-            Castling(board, myPosition, piece.getTeamColor(), moves, false); // queenside
+            castling(board, myPosition, piece.getTeamColor(), moves, true);  // kingside
+            castling(board, myPosition, piece.getTeamColor(), moves, false); // queenside
         }
 
         return moves;
     }
 
-    private void Castling(ChessBoard board, ChessPosition kingPos, ChessGame.TeamColor color,
-                           Collection<ChessMove> moves, boolean kingside) {
+    private void castling(ChessBoard board, ChessPosition kingPos, ChessGame.TeamColor color,
+                          Collection<ChessMove> moves, boolean kingside) {
 
         int row = kingPos.getRow();
 
@@ -89,10 +89,15 @@ public class KingMoves implements PieceMovesCalculator{
                 ChessPiece piece = board.getPiece(pos);
 
                 //look to see if matching color
-                if (piece == null || piece.getTeamColor() == color) continue;
+                if (piece == null || piece.getTeamColor() == color)
+                {
+                    continue;
+                }
 
                 for (ChessMove move : piece.pieceMoves(board, pos)) {
-                    if (move.getEndPosition().equals(square)) return true;
+                    if (move.getEndPosition().equals(square)) {
+                        return true;
+                    }
                 }
             }
         }

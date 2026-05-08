@@ -77,19 +77,14 @@ public class PawnMoves implements PieceMovesCalculator {
                 if (lastSpot != null && lastSpot.getPieceType() == ChessPiece.PieceType.PAWN &&
                         lastSpot.getTeamColor() != currentPlayerColor) {
 
-                    //see if pawn moved twice
-                    if (Math.abs(lastBegin.getRow() - lastEndSpot.getRow()) == 2) {
+                    // must be adjacent pawn and pawn must have moved by 2
+                    if (Math.abs(lastBegin.getRow() - lastEndSpot.getRow()) == 2 && lastEndSpot.getRow() == row && Math.abs(lastEndSpot.getColumn() - col) == 1 &&
+                            ((currentPlayerColor == ChessGame.TeamColor.WHITE && row == 5) ||
+                                    (currentPlayerColor == ChessGame.TeamColor.BLACK && row == 4))) {
+                        // capture goes behind pawn
+                        ChessPosition enPassantTarget = new ChessPosition(row + direction, lastEndSpot.getColumn());
 
-                        // must be adjacent pawn
-                        if (lastEndSpot.getRow() == row && Math.abs(lastEndSpot.getColumn() - col) == 1 &&
-                                ((currentPlayerColor == ChessGame.TeamColor.WHITE && row == 5) ||
-                                        (currentPlayerColor == ChessGame.TeamColor.BLACK && row == 4))) {
-
-                            // capture goes behind pawn
-                            ChessPosition enPassantTarget = new ChessPosition(row + direction, lastEndSpot.getColumn());
-
-                            moves.add(new ChessMove(myPosition, enPassantTarget, null));
-                        }
+                        moves.add(new ChessMove(myPosition, enPassantTarget, null));
                     }
                 }
                 
