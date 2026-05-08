@@ -62,7 +62,7 @@ public class ChessGame {
         //if no piece selected return nothing
         if (piece == null)
         {
-            return null;
+            return new ArrayList<>();
         }
 
         //set collection of moves and of valid moves
@@ -93,7 +93,7 @@ public class ChessGame {
         return validMoves;
     }
 
-    //copy teh board
+    //copy the board
     public ChessBoard copyBoard(ChessBoard originalBoard) {
         ChessBoard copy = new ChessBoard();
 
@@ -103,7 +103,7 @@ public class ChessGame {
                 ChessPiece piece = originalBoard.getPiece(currentPiecePos);
 
                 if (piece != null) {
-                    copy.addPiece(currentPiecePos, piece); // may need deep copy depending on your design
+                    copy.addPiece(currentPiecePos, new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
                 }
             }
         }
@@ -147,7 +147,6 @@ public class ChessGame {
 
         //enable move piece by clearing the start pos and putting the orig piece in stop pos
         board.addPiece(stop, piece);
-        board.addPiece(start, null);
 
         // switch player turns
         currentPlayerTurn = (currentPlayerTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
@@ -162,6 +161,10 @@ public class ChessGame {
         else {
             board.addPiece(stop, piece);
         }
+
+        board.addPiece(start, null);
+
+        board.setLastMove(move);
     }
 
     /**

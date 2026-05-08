@@ -12,6 +12,8 @@ import java.util.Objects;
 public class ChessBoard {
 
     ChessPiece[][] squares = new ChessPiece[8][8];
+    private ChessMove lastMove;
+
     public ChessBoard() {
         
     }
@@ -76,6 +78,14 @@ public class ChessBoard {
         }
     }
 
+    //get and set last move helped function
+    public void setLastMove(ChessMove move) {
+        this.lastMove = move;
+    }
+    public ChessMove getLastMove() {
+        return lastMove;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -89,4 +99,6 @@ public class ChessBoard {
     public int hashCode() {
         return Arrays.deepHashCode(squares);
     }
+
+
 }

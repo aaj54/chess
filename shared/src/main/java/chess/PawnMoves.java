@@ -14,6 +14,7 @@ public class PawnMoves implements PieceMovesCalculator {
         int col = myPosition.getColumn();
         ChessPiece piece = board.getPiece(myPosition);
         ChessGame.TeamColor currentPlayerColor = piece.getTeamColor();
+        ChessMove lastMove = board.getLastMove();
 
         //Look to see if pawn need to move forward or backwards
         int direction = (currentPlayerColor == ChessGame.TeamColor.WHITE) ? 1 : -1;
@@ -44,7 +45,7 @@ public class PawnMoves implements PieceMovesCalculator {
                 }
             }
         }
-        int capture[] = {col-1, col+1};
+        int[] capture = {col-1, col+1};
         for (int c : capture)
         {
             int r  = row + direction;
@@ -66,6 +67,30 @@ public class PawnMoves implements PieceMovesCalculator {
                 {
                     moves.add(new ChessMove(myPosition, captDiag, null));
                 }
+            }
+            //en passant
+            else if (moveDiag == null && lastMove != null) {
+                ChessPosition lastBegin = lastMove.getStartPosition();
+                ChessPosition lastEndSpot = lastMove.getEndPosition();
+                ChessPiece lastSpot = board.getPiece(lastEndSpot);
+
+                if (lastSpot != null && lastSpot.getPieceType() == ChessPiece.PieceType.PAWN &&
+                        lastSpot.getTeamColor() != currentPlayerColor) {
+
+                    //see if pawn moved twice
+                    if (Math.abs(lastBegin.getRow() - lastEndSpot.getRow()) == 2) {
+
+                        // must be adjacent pawn
+                        if (lastEndSpot.getRow() == row && Math.abs(lastEndSpot.getColumn() - col) == 1){
+
+                            // capture goes behind pawn
+                            ChessPosition enPassantTarget = new ChessPosition(row + direction, lastEndSpot.getColumn());
+
+                            moves.add(new ChessMove(myPosition, enPassantTarget, null));
+                        }
+                    }
+                }
+                
             }
         }
         return moves;
