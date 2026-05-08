@@ -48,7 +48,9 @@ public class PawnMoves implements PieceMovesCalculator {
         for (int c : capture)
         {
             int r  = row + direction;
-            if (r < 1 || r > 8 || c < 1 || c > 8) continue;
+            if (r < 1 || r > 8 || c < 1 || c > 8) {
+                continue;
+            }
 
             ChessPosition captDiag = new ChessPosition(r, c);
             ChessPiece moveDiag = board.getPiece(captDiag);
