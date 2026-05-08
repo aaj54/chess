@@ -18,6 +18,15 @@ public class ChessBoard {
         
     }
 
+    //get last move 
+    public ChessMove getLastMove() {
+        return lastMove;
+    }
+
+    public void setLastMove(ChessMove move) {
+        this.lastMove = move;
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -76,14 +85,6 @@ public class ChessBoard {
         for (int col = 0; col < 8; col++) {
             squares[6][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
         }
-    }
-
-    //get and set last move helped function
-    public void setLastMove(ChessMove move) {
-        this.lastMove = move;
-    }
-    public ChessMove getLastMove() {
-        return lastMove;
     }
 
     @Override

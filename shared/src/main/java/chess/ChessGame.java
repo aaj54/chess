@@ -13,6 +13,7 @@ import java.util.Objects;
 public class ChessGame {
     private ChessBoard board;
     private TeamColor currentPlayerTurn;
+    private ChessMove lastMove;
 
     public ChessGame() {
 
@@ -76,6 +77,20 @@ public class ChessGame {
             ChessBoard copy = copyBoard(board);
             ChessPiece movingPiece = copy.getPiece(mov.getStartPosition());
 
+            if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+                int getColumnDifference = mov.getEndPosition().getColumn() - mov.getStartPosition().getColumn();
+
+                //if col difference set bool
+                boolean movingDiagonally = getColumnDifference != 0;
+                boolean targetEmpty = board.getPiece(mov.getEndPosition()) == null;
+
+                //add en pessant
+                if (movingDiagonally && targetEmpty) {
+                    // Remove the captured pawn (same row as attacker, same col as destination)
+                    copy.addPiece(new ChessPosition(mov.getStartPosition().getRow(), mov.getEndPosition().getColumn()), null);
+                }
+            }
+
             //move piece and set old spot to null
             copy.addPiece(mov.getEndPosition(), movingPiece);
             copy.addPiece(mov.getStartPosition(), null);
@@ -107,6 +122,7 @@ public class ChessGame {
                 }
             }
         }
+        copy.setLastMove(originalBoard.getLastMove());
 
         return copy;
     }
@@ -145,11 +161,27 @@ public class ChessGame {
             throw new InvalidMoveException();
         }
 
+
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            int getColumnDifference = stop.getColumn() - start.getColumn();
+
+            //if col difference set bool
+            boolean movingDiagonally = getColumnDifference != 0;
+            boolean targetEmpty = board.getPiece(stop) == null;
+
+            //add en pessant
+            if (movingDiagonally && targetEmpty) {
+                // Remove the captured pawn (same row as attacker, same col as destination)
+                board.addPiece(new ChessPosition(start.getRow(), stop.getColumn()), null);
+            }
+        }
+
         //enable move piece by clearing the start pos and putting the orig piece in stop pos
         board.addPiece(stop, piece);
 
         // switch player turns
         currentPlayerTurn = (currentPlayerTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+
 
         //add pawn promotion logic
         if (move.getPromotionPiece() != null) {
@@ -164,6 +196,7 @@ public class ChessGame {
 
         board.addPiece(start, null);
 
+        lastMove = move;
         board.setLastMove(move);
     }
 
