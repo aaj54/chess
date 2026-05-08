@@ -87,7 +87,8 @@ public class ChessGame {
                 //add en pessant
                 if (movingDiagonally && targetEmpty) {
                     // Remove the captured pawn (same row as attacker, same col as destination)
-                    copy.addPiece(new ChessPosition(mov.getStartPosition().getRow(), mov.getEndPosition().getColumn()), null);
+                    copy.addPiece(new ChessPosition(mov.getStartPosition().getRow(),
+                            mov.getEndPosition().getColumn()), null);
                 }
             }
 
@@ -118,7 +119,9 @@ public class ChessGame {
                 ChessPiece piece = originalBoard.getPiece(currentPiecePos);
 
                 if (piece != null) {
-                    copy.addPiece(currentPiecePos, new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
+                    ChessPiece copiedPiece = new ChessPiece(piece.getTeamColor(), piece.getPieceType());
+                    copiedPiece.setHasMoved(piece.hasMoved()); // ADD THIS
+                    copy.addPiece(currentPiecePos, copiedPiece);
                 }
             }
         }
@@ -159,6 +162,33 @@ public class ChessGame {
         //if no available moves throw error
         if (!availableMoves.contains(move)) {
             throw new InvalidMoveException();
+        }
+
+        //look to see if king or rook has moved
+        if (piece.getPieceType() == ChessPiece.PieceType.KING ||
+                piece.getPieceType() == ChessPiece.PieceType.ROOK) {
+            piece.setHasMoved(true);
+        }
+
+        //Add castling
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+            int getColDifference = stop.getColumn() - start.getColumn();
+            //Get abs 2 because can be con left or right side
+            if (Math.abs(getColDifference) == 2) {
+                //set rook col
+                int rookFromCol = (getColDifference > 0) ? 8 : 1;
+
+                //put the rook in col
+                int rookToCol   = (getColDifference > 0) ? stop.getColumn() - 1 : stop.getColumn() + 1;
+
+                //move rook
+                ChessPiece rook = board.getPiece(new ChessPosition(start.getRow(), rookFromCol));
+                rook.setHasMoved(true);
+
+                //move the rook
+                board.addPiece(new ChessPosition(start.getRow(), rookToCol), rook);
+                board.addPiece(new ChessPosition(start.getRow(), rookFromCol), null);
+            }
         }
 
 
