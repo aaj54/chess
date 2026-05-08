@@ -78,7 +78,8 @@ public class PawnMoves implements PieceMovesCalculator {
                         lastSpot.getTeamColor() != currentPlayerColor) {
 
                     // must be adjacent pawn and pawn must have moved by 2
-                    if (Math.abs(lastBegin.getRow() - lastEndSpot.getRow()) == 2 && lastEndSpot.getRow() == row && Math.abs(lastEndSpot.getColumn() - col) == 1 &&
+                    if (Math.abs(lastBegin.getRow() - lastEndSpot.getRow()) == 2 && lastEndSpot.getRow() ==
+                            row && Math.abs(lastEndSpot.getColumn() - col) == 1 &&
                             ((currentPlayerColor == ChessGame.TeamColor.WHITE && row == 5) ||
                                     (currentPlayerColor == ChessGame.TeamColor.BLACK && row == 4))) {
                         // capture goes behind pawn
