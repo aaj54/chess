@@ -244,7 +244,6 @@ public class ChessGame {
                     }
                 }
             }
-            return true;
         }
 
         // no legal moves while in check
@@ -278,23 +277,16 @@ public class ChessGame {
                     Collection<ChessMove> moves = validMoves(pos);
 
                     // if ANY legal move exists,not stalemate
-                    if (moves != null && !moves.isEmpty()) {
+                    if (!moves.isEmpty()) {
                         return false;
-                    }
-
-                    //if not already in check and no valid moves
-                    if (!isInCheck(teamColor) && moves.isEmpty())
-                    {
-                        return true;
                     }
                 }
             }
         }
 
-        //if not in stalemate return false
-        return false;
+        //if in stalemate return true
+        return true;
     }
-
 
     /**
      * Sets this game's chessboard to a given board
