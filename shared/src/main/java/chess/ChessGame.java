@@ -69,15 +69,18 @@ public class ChessGame {
         Collection<ChessMove> allMoves = piece.pieceMoves(board, startPosition);
         Collection<ChessMove> validMoves = new ArrayList<>();
 
+        //loop through all move options
         for (ChessMove mov: allMoves)
         {
             //copy board
             ChessBoard copy = copyBoard(board);
             ChessPiece movingPiece = copy.getPiece(mov.getStartPosition());
 
+            //move piece and set old spot to null
             copy.addPiece(mov.getEndPosition(), movingPiece);
             copy.addPiece(mov.getStartPosition(), null);
 
+            //set temp game and make copy
             ChessGame tempGame = new ChessGame();
             tempGame.setBoard(copy);
 
@@ -90,6 +93,7 @@ public class ChessGame {
         return validMoves;
     }
 
+    //copy teh board
     public ChessBoard copyBoard(ChessBoard originalBoard) {
         ChessBoard copy = new ChessBoard();
 
@@ -215,7 +219,36 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+
+        //if not already in check cant be
+        if (!isInCheck(teamColor))
+        {
+            return false;
+        }
+
+        //go through all pieces
+        for (int ii = 1; ii < 9; ii++) {
+            for (int jj = 1; jj < 9; jj++) {
+
+                ChessPosition pos = new ChessPosition(ii, jj);
+                ChessPiece piece = board.getPiece(pos);
+
+                // only check this team's pieces
+                if (piece != null && piece.getTeamColor() == teamColor) {
+
+                    Collection<ChessMove> moves = validMoves(pos);
+
+                    // if ANY legal move exists,not checkmate
+                    if (moves != null && !moves.isEmpty()) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // no legal moves while in check
+        return true;
     }
 
     /**
