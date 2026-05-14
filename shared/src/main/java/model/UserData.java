@@ -1,6 +1,6 @@
 package model;
 
-public record UserInfo(
+public record UserData(
         String username,
         String password,
         String email

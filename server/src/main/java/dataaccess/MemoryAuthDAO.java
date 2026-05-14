@@ -8,6 +8,10 @@ public class MemoryAuthDAO {
 
     private final HashMap<String, AuthData> auths = new HashMap<>();
 
+    public void createAuth(AuthData auth) {
+        auths.put(auth.authToken(), auth);
+    }
+
     public void clear() {
         auths.clear(); //clear auth
     }
