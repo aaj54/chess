@@ -22,6 +22,8 @@ public class ServerTests {
         clearService = new ClearSer(userDAO, authDAO, gameDAO);
     }
 
+
+    //tets clear
     @Test
     void clearSuccess() throws Exception {
         userService.register(new RegRequest("user", "pass", "e@mail.com"));
@@ -29,6 +31,16 @@ public class ServerTests {
         assertDoesNotThrow(() -> userService.register(new RegRequest("user", "pass", "e@mail.com")));
     }
 
+    //test register success
+    @Test
+    void regSuccess() throws Exception
+    {
+        RegResult result = userService.register(new RegRequest("user", "pass", "e@mail.com"));
+        assertNotNull(result.authToken());
+        assertEquals("user", result.username());
+    }
+
+    //test login success
     @Test
     void loginSuccess() throws DataAccessException {
         userService.register(new RegRequest("user", "pass", "e@mail.com"));
@@ -37,6 +49,7 @@ public class ServerTests {
         assertEquals("user", result.username());
     }
 
+    //test login fail
     @Test
     void loginWrongPassword() throws DataAccessException {
         userService.register(new RegRequest("user", "pass", "e@mail.com"));
