@@ -29,12 +29,14 @@ public class Server {
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
+        //clear
         javalin.delete("/db", ctx -> {
             clearService.clear();
             ctx.status(200);
             ctx.result("{}");
         });
 
+        //new user
         javalin.post("/user", ctx -> {
 
             RegRequest req = ctx.bodyAsClass(RegRequest.class);
@@ -52,12 +54,26 @@ public class Server {
             }
         });
 
+        //login
         javalin.post("/session", ctx -> {
             LoginUser req = ctx.bodyAsClass(LoginUser.class);
             try {
                 LoginResult res = userService.login(req);
                 ctx.status(200);
                 ctx.json(res);
+            } catch (DataAccessException e) {
+                ctx.status(401);
+                ctx.json(new ErrorResp("Error: unauthorized"));
+            }
+        });
+
+        //logout
+        javalin.delete("/session", ctx -> {
+            String authToken = ctx.header("authorization");
+            try {
+                userService.logout(authToken);
+                ctx.status(200);
+                ctx.result("{}");
             } catch (DataAccessException e) {
                 ctx.status(401);
                 ctx.json(new ErrorResp("Error: unauthorized"));

@@ -39,4 +39,11 @@ public class UserSer {
         authDAO.createAuth(new AuthData(token, request.username()));
         return new LoginResult(request.username(), token);
     }
+
+    public void logout(String authToken) throws DataAccessException {
+        if (authDAO.getAuth(authToken) == null) {
+            throw new DataAccessException("unauthorized");
+        }
+        authDAO.deleteAuth(authToken);
+    }
 }

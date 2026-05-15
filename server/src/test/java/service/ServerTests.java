@@ -23,7 +23,7 @@ public class ServerTests {
     }
 
 
-    //tets clear
+    //test clear
     @Test
     void clearSuccess() throws Exception {
         userService.register(new RegRequest("user", "pass", "e@mail.com"));
@@ -38,6 +38,15 @@ public class ServerTests {
         RegResult result = userService.register(new RegRequest("user", "pass", "e@mail.com"));
         assertNotNull(result.authToken());
         assertEquals("user", result.username());
+    }
+
+    //test register username duplicate
+    @Test
+    void regDuplicate() throws Exception
+    {
+        userService.register(new RegRequest("user", "pass", "e@mail.com"));
+        assertThrows(DataAccessException.class, () ->
+                userService.register(new RegRequest("user", "pass", "e@mail.com")));
     }
 
     //test login success
@@ -55,5 +64,19 @@ public class ServerTests {
         userService.register(new RegRequest("user", "pass", "e@mail.com"));
         assertThrows(DataAccessException.class, () ->
                 userService.login(new LoginUser("user", "wrongpass")));
+    }
+
+    //successful logout
+    @Test
+    void logoutSuccess() throws Exception {
+        userService.register(new RegRequest("user", "pass", "e@mail.com"));
+        LoginResult result = userService.login(new LoginUser("user", "pass"));
+        assertDoesNotThrow(() -> userService.logout(result.authToken()));
+    }
+
+    //not successful lout
+    @Test
+    void logoutInvalidToken() {
+        assertThrows(DataAccessException.class, () -> userService.logout("invalid-token"));
     }
 }
