@@ -10,6 +10,8 @@ import service.RegRequest;
 import service.RegResult;
 import service.UserSer;
 import service.ErrorResp;
+import service.LoginUser;
+import service.LoginResult;
 
 public class Server {
 
@@ -47,6 +49,18 @@ public class Server {
             } catch (Exception e) {
                 ctx.status(500);
                 ctx.json(new ErrorResp("Error: " + e.getMessage()));
+            }
+        });
+
+        javalin.post("/session", ctx -> {
+            LoginUser req = ctx.bodyAsClass(LoginUser.class);
+            try {
+                LoginResult res = userService.login(req);
+                ctx.status(200);
+                ctx.json(res);
+            } catch (DataAccessException e) {
+                ctx.status(401);
+                ctx.json(new ErrorResp("Error: unauthorized"));
             }
         });
 

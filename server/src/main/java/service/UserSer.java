@@ -29,4 +29,14 @@ public class UserSer {
 
         return new RegResult(request.username(), token);
     }
+
+    public LoginResult login(LoginUser request) throws DataAccessException {
+        UserData user = userDAO.getUser(request.username());
+        if (user == null || !user.password().equals(request.password())) {
+            throw new DataAccessException("unauthorized");
+        }
+        String token = UUID.randomUUID().toString();
+        authDAO.createAuth(new AuthData(token, request.username()));
+        return new LoginResult(request.username(), token);
+    }
 }
