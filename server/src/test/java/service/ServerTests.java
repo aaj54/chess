@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ServerTests {
     private UserSer userService;
     private ClearSer clearService;
+    private GameSer gameService;
 
     @BeforeEach
     void setup() {
@@ -20,6 +21,7 @@ public class ServerTests {
         MemoryGameDAO gameDAO = new MemoryGameDAO();
         userService = new UserSer(userDAO, authDAO);
         clearService = new ClearSer(userDAO, authDAO, gameDAO);
+        gameService = new GameSer(gameDAO, authDAO);
     }
 
 
@@ -78,5 +80,22 @@ public class ServerTests {
     @Test
     void logoutInvalidToken() {
         assertThrows(DataAccessException.class, () -> userService.logout("invalid-token"));
+    }
+
+    //test createGame success
+    @Test
+    void creGameSuccess() throws DataAccessException {
+        userService.register(new RegRequest("user", "pass", "e@mail.com"));
+        LoginResult login = userService.login(new LoginUser("user", "pass"));
+        CreateGameResult result = gameService.createGame(login.authToken(), new CreateGameRequest("name"));
+        assertNotNull(result);
+        assertTrue(result.gameID() > 0);
+    }
+
+    //test create Game fail
+    @Test
+    void creGameFail() {
+        assertThrows(DataAccessException.class, () -> gameService.createGame("badToken",
+                new CreateGameRequest("name")));
     }
 }
