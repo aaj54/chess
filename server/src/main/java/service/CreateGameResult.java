@@ -1,7 +1,6 @@
 package service;
 
 public record CreateGameResult(
-        String gameName,
-        String authToken
+        int gameID
 ) {
 }

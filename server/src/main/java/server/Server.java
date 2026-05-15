@@ -12,6 +12,9 @@ import service.UserSer;
 import service.ErrorResp;
 import service.LoginUser;
 import service.LoginResult;
+import service.CreateGameResult;
+import service.CreateGameRequest;
+import service.GameSer;
 
 public class Server {
 
@@ -25,6 +28,7 @@ public class Server {
     //set class variables
     ClearSer clearService = new ClearSer(userDAO, authDAO, gameDAO);
     UserSer userService = new UserSer(userDAO, authDAO);
+    GameSer gameService = new GameSer(gameDAO, authDAO);
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
@@ -77,6 +81,25 @@ public class Server {
             } catch (DataAccessException e) {
                 ctx.status(401);
                 ctx.json(new ErrorResp("Error: unauthorized"));
+            }
+        });
+
+        //create game
+        javalin.post("/game", ctx -> {
+            String authToken = ctx.header("authorization");
+            CreateGameRequest req = ctx.bodyAsClass(CreateGameRequest.class);
+            try {
+                CreateGameResult res = gameService.createGame(authToken, req);
+                ctx.status(200);
+                ctx.json(res);
+            } catch (DataAccessException e) {
+                if (e.getMessage().equals("unauthorized")) {
+                    ctx.status(401);
+                    ctx.json(new ErrorResp("Error: unauthorized"));
+                } else {
+                    ctx.status(400);
+                    ctx.json(new ErrorResp("Error: bad request"));
+                }
             }
         });
 
