@@ -1,21 +1,25 @@
 package server;
 
-import io.javalin.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
-import dataaccess.DataAccessException;
+import io.javalin.Javalin;
+import io.javalin.json.JsonMapper;
 import service.ClearSer;
+import service.CreateGameRequest;
+import service.CreateGameResult;
+import service.ErrorResp;
+import service.GameSer;
+import service.ListGameRes;
+import service.LoginResult;
+import service.LoginUser;
 import service.RegRequest;
 import service.RegResult;
 import service.UserSer;
-import service.ErrorResp;
-import service.LoginUser;
-import service.LoginResult;
-import service.CreateGameResult;
-import service.CreateGameRequest;
-import service.GameSer;
-import service.ListGameRes;
+import java.lang.reflect.Type;
 
 public class Server {
 
@@ -32,7 +36,24 @@ public class Server {
     GameSer gameService = new GameSer(gameDAO, authDAO);
 
     public Server() {
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        Gson gson = new GsonBuilder().create();
+
+        JsonMapper gsonMapper = new JsonMapper() {
+            @Override
+            public String toJsonString(Object obj, Type type) {
+                return gson.toJson(obj, type);
+            }
+
+            @Override
+            public <T> T fromJsonString(String json, Type targetType) {
+                return gson.fromJson(json, targetType);
+            }
+        };
+
+        javalin = Javalin.create(config -> {
+            config.staticFiles.add("web");
+            config.jsonMapper(gsonMapper);
+        });
 
         //clear
         javalin.delete("/db", ctx -> {
@@ -43,32 +64,36 @@ public class Server {
 
         //new user
         javalin.post("/user", ctx -> {
-
-            RegRequest req = ctx.bodyAsClass(RegRequest.class);
-
             try {
+                RegRequest req = ctx.bodyAsClass(RegRequest.class);
                 RegResult res = userService.register(req);
-                ctx.status(200);
-                ctx.json(res);
+                ctx.status(200).json(res);
             } catch (DataAccessException e) {
-                ctx.status(403);
-                ctx.json(new ErrorResp("Error: already taken"));
+                if ("bad request".equals(e.getMessage())) {
+                    ctx.status(400).json(new ErrorResp("Error: bad request"));
+                } else {
+                    ctx.status(403).json(new ErrorResp("Error: already taken"));
+                }
             } catch (Exception e) {
-                ctx.status(500);
-                ctx.json(new ErrorResp("Error: " + e.getMessage()));
+                ctx.status(500).json(new ErrorResp("Error: " + e.getMessage()));
             }
         });
 
         //login
         javalin.post("/session", ctx -> {
-            LoginUser req = ctx.bodyAsClass(LoginUser.class);
             try {
+                LoginUser req = ctx.bodyAsClass(LoginUser.class);
                 LoginResult res = userService.login(req);
                 ctx.status(200);
                 ctx.json(res);
             } catch (DataAccessException e) {
-                ctx.status(401);
-                ctx.json(new ErrorResp("Error: unauthorized"));
+                if ("bad request".equals(e.getMessage())) {
+                    ctx.status(400);
+                    ctx.json(new ErrorResp("Error: bad request"));
+                } else {
+                    ctx.status(401);
+                    ctx.json(new ErrorResp("Error: unauthorized"));
+                }
             }
         });
 

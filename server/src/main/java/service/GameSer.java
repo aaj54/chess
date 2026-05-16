@@ -18,11 +18,11 @@ public class GameSer {
     }
 
     public CreateGameResult createGame(String authToken, CreateGameRequest req) throws DataAccessException {
+        if (req == null || req.gameName() == null || req.gameName().isBlank()) {
+            throw new DataAccessException("bad request");
+        }
         if (authDAO.getAuth(authToken) == null) {
             throw new DataAccessException("unauthorized");
-        }
-        if (req.gameName() == null) {
-            throw new DataAccessException("bad request");
         }
         int gameID = gameDAO.createGame(req.gameName());
         return new CreateGameResult(gameID);
@@ -36,13 +36,13 @@ public class GameSer {
     }
 
     public void joinGame(String authToken, JoinGame req) throws DataAccessException {
+        if (req == null || req.playerColor() == null) {
+            throw new DataAccessException("bad request");
+        }
         if (authDAO.getAuth(authToken) == null) {
             throw new DataAccessException("unauthorized");
         }
         GameData game = gameDAO.getGame(req.gameID());
-        if (game == null || req.playerColor() == null) {
-            throw new DataAccessException("bad request");
-        }
         String username = authDAO.getAuth(authToken).username();
         if (req.playerColor().equals("WHITE")) {
             if (game.whiteUsername() != null) {

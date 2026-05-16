@@ -21,6 +21,13 @@ public class UserSer {
 
     public RegResult register(RegRequest request) throws DataAccessException {
 
+        if (request == null ||
+                request.username() == null || request.username().isBlank() ||
+                request.password() == null || request.password().isBlank() ||
+                request.email() == null || request.email().isBlank()) {
+            throw new DataAccessException("bad request");
+        }
+
         UserData user = new UserData(request.username(), request.password(), request.email());
         userDAO.createUser(user);
 
@@ -31,10 +38,15 @@ public class UserSer {
     }
 
     public LoginResult login(LoginUser request) throws DataAccessException {
+        if (request == null || request.username() == null || request.password() == null) {
+            throw new DataAccessException("bad request");
+        }
+
         UserData user = userDAO.getUser(request.username());
         if (user == null || !user.password().equals(request.password())) {
             throw new DataAccessException("unauthorized");
         }
+
         String token = UUID.randomUUID().toString();
         authDAO.createAuth(new AuthData(token, request.username()));
         return new LoginResult(request.username(), token);
