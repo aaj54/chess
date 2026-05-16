@@ -3,6 +3,7 @@ package dataaccess;
 import chess.ChessGame;
 import model.GameData;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 public class MemoryGameDAO {
@@ -35,5 +36,10 @@ public class MemoryGameDAO {
     public GameData getGame(int gameID)
     {
         return games.get(gameID);
+    }
+
+    //get game info
+    public Collection<GameData> listGames() {
+        return games.values();
     }
 }

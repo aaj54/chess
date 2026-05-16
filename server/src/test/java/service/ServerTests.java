@@ -98,4 +98,21 @@ public class ServerTests {
         assertThrows(DataAccessException.class, () -> gameService.createGame("badToken",
                 new CreateGameRequest("name")));
     }
+
+    //test list game positive test
+    @Test
+    void listGamesSuccess() throws Exception {
+        userService.register(new RegRequest("user", "pass", "e@mail.com"));
+        LoginResult login = userService.login(new LoginUser("user", "pass"));
+        gameService.createGame(login.authToken(), new CreateGameRequest("myGame"));
+        ListGameRes result = gameService.listGames(login.authToken());
+        assertFalse(result.allGames().isEmpty());
+    }
+
+    //test list game fail
+    @Test
+    void listGamesFail() {
+        assertThrows(DataAccessException.class, () ->
+                gameService.listGames("bad-token"));
+    }
 }

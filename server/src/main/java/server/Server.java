@@ -15,6 +15,7 @@ import service.LoginResult;
 import service.CreateGameResult;
 import service.CreateGameRequest;
 import service.GameSer;
+import service.ListGameRes;
 
 public class Server {
 
@@ -100,6 +101,19 @@ public class Server {
                     ctx.status(400);
                     ctx.json(new ErrorResp("Error: bad request"));
                 }
+            }
+        });
+
+        //list game
+        javalin.get("/game", ctx -> {
+            String authToken = ctx.header("authorization");
+            try {
+                ListGameRes res = gameService.listGames(authToken);
+                ctx.status(200);
+                ctx.json(res);
+            } catch (DataAccessException e) {
+                ctx.status(401);
+                ctx.json(new ErrorResp("Error: unauthorized"));
             }
         });
 

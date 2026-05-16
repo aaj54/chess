@@ -26,4 +26,11 @@ public class GameSer {
         int gameID = gameDAO.createGame(req.gameName());
         return new CreateGameResult(gameID);
     }
+
+    public ListGameRes listGames(String authToken) throws DataAccessException {
+        if (authDAO.getAuth(authToken) == null) {
+            throw new DataAccessException("unauthorized");
+        }
+        return new ListGameRes(gameDAO.listGames());
+    }
 }
