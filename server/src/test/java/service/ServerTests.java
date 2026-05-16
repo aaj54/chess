@@ -115,4 +115,26 @@ public class ServerTests {
         assertThrows(DataAccessException.class, () ->
                 gameService.listGames("bad-token"));
     }
+
+
+    @Test
+    void joinGameSuccess() throws Exception {
+        userService.register(new RegRequest("user", "pass", "e@mail.com"));
+        LoginResult login = userService.login(new LoginUser("user", "pass"));
+        CreateGameResult game = gameService.createGame(login.authToken(), new CreateGameRequest("myGame"));
+        assertDoesNotThrow(() -> gameService.joinGame(login.authToken(),
+                new JoinGame("WHITE", game.gameID())));
+    }
+
+    @Test
+    void joinGameAlreadyTaken() throws Exception {
+        userService.register(new RegRequest("user1", "pass", "e@mail.com"));
+        userService.register(new RegRequest("user2", "passw", "e2@mail.com"));
+        LoginResult login1 = userService.login(new LoginUser("user1", "pass"));
+        LoginResult login2 = userService.login(new LoginUser("user2", "passw"));
+        CreateGameResult game = gameService.createGame(login1.authToken(), new CreateGameRequest("myGame"));
+        gameService.joinGame(login1.authToken(), new JoinGame("WHITE", game.gameID()));
+        assertThrows(DataAccessException.class, () ->
+                gameService.joinGame(login2.authToken(), new JoinGame("WHITE", game.gameID())));
+    }
 }

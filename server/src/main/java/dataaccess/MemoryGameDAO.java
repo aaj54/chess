@@ -42,4 +42,9 @@ public class MemoryGameDAO {
     public Collection<GameData> listGames() {
         return games.values();
     }
+
+    //update the game
+    public void updateGame(GameData game) {
+        games.put(game.gameID(), game);
+    }
 }
