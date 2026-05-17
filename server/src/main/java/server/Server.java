@@ -8,17 +8,8 @@ import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
 import io.javalin.Javalin;
 import io.javalin.json.JsonMapper;
-import service.ClearSer;
-import service.CreateGameRequest;
-import service.CreateGameResult;
-import service.ErrorResp;
-import service.GameSer;
-import service.ListGameRes;
-import service.LoginResult;
-import service.LoginUser;
-import service.RegRequest;
-import service.RegResult;
-import service.UserSer;
+import service.*;
+
 import java.lang.reflect.Type;
 
 public class Server {
@@ -139,6 +130,28 @@ public class Server {
             } catch (DataAccessException e) {
                 ctx.status(401);
                 ctx.json(new ErrorResp("Error: unauthorized"));
+            }
+        });
+
+        //join game
+        javalin.put("/game", ctx -> {
+            String authToken = ctx.header("authorization");
+            JoinGame req = ctx.bodyAsClass(JoinGame.class);
+            try {
+                gameService.joinGame(authToken, req);
+                ctx.status(200);
+                ctx.result("{}");
+            } catch (DataAccessException e) {
+                if (e.getMessage().equals("unauthorized")) {
+                    ctx.status(401);
+                    ctx.json(new ErrorResp("Error: unauthorized"));
+                } else if (e.getMessage().equals("already taken")) {
+                    ctx.status(403);
+                    ctx.json(new ErrorResp("Error: already taken"));
+                } else {
+                    ctx.status(400);
+                    ctx.json(new ErrorResp("Error: bad request"));
+                }
             }
         });
 
