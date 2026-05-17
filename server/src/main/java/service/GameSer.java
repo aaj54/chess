@@ -43,6 +43,9 @@ public class GameSer {
             throw new DataAccessException("unauthorized");
         }
         GameData game = gameDAO.getGame(req.gameID());
+        if (game == null) {
+            throw new DataAccessException("bad request");
+        }
         String username = authDAO.getAuth(authToken).username();
         if (req.playerColor().equals("WHITE")) {
             if (game.whiteUsername() != null) {
