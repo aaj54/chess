@@ -106,7 +106,7 @@ public class ServerTests {
         LoginResult login = userService.login(new LoginUser("user", "pass"));
         gameService.createGame(login.authToken(), new CreateGameRequest("myGame"));
         ListGameRes result = gameService.listGames(login.authToken());
-        assertFalse(result.allGames().isEmpty());
+        assertFalse(result.games().isEmpty());
     }
 
     //test list game fail
