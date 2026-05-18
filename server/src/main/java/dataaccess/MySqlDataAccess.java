@@ -1,7 +1,6 @@
 package dataaccess;
 
 import com.google.gson.Gson;
-import exception.ResponseException;
 import model.*;
 
 import java.sql.*;
@@ -12,18 +11,18 @@ import static java.sql.Types.NULL;
 
 public class MySqlDataAccess implements DataAccess {
 
-    public MySqlDataAccess() throws ResponseException {
+    public MySqlDataAccess() throws DataAccessException {
         configureDatabase();
     }
 
-    public Pet addPet(Pet pet) throws ResponseException {
+    public Pet addPet(Pet pet) throws DataAccessException {
         var statement = "INSERT INTO pet (name, type, json) VALUES (?, ?, ?)";
         String json = new Gson().toJson(pet);
         int id = executeUpdate(statement, pet.name(), pet.type(), json);
         return new Pet(id, pet.name(), pet.type());
     }
 
-    public Pet getPet(int id) throws ResponseException {
+    public Pet getPet(int id) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
             var statement = "SELECT id, json FROM pet WHERE id=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -35,12 +34,12 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(DataAccessException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
         }
         return null;
     }
 
-    public PetList listPets() throws ResponseException {
+    public PetList listPets() throws DataAccessException {
         var result = new PetList();
         try (Connection conn = DatabaseManager.getConnection()) {
             var statement = "SELECT id, json FROM pet";
@@ -52,17 +51,17 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(DataAccessException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
         }
         return result;
     }
 
-    public void deletePet(Integer id) throws ResponseException {
+    public void deletePet(Integer id) throws DataAccessException {
         var statement = "DELETE FROM pet WHERE id=?";
         executeUpdate(statement, id);
     }
 
-    public void deleteAllPets() throws ResponseException {
+    public void deleteAllPets() throws DataAccessException {
         var statement = "TRUNCATE pet";
         executeUpdate(statement);
     }
@@ -74,7 +73,7 @@ public class MySqlDataAccess implements DataAccess {
         return pet.setId(id);
     }
 
-    private int executeUpdate(String statement, Object... params) throws ResponseException {
+    private int executeUpdate(String statement, Object... params) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (int i = 0; i < params.length; i++) {
@@ -94,26 +93,41 @@ public class MySqlDataAccess implements DataAccess {
                 return 0;
             }
         } catch (SQLException e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("unable to update database: %s, %s", statement, e.getMessage()));
+            throw new DataAccessException(DataAccessException.Code.ServerError, String.format("unable to update database: %s, %s", statement, e.getMessage()));
         }
     }
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS  pet (
-              `id` int NOT NULL AUTO_INCREMENT,
-              `name` varchar(256) NOT NULL,
-              `type` ENUM('CAT', 'DOG', 'FISH', 'FROG', 'ROCK') DEFAULT 'CAT',
-              `json` TEXT DEFAULT NULL,
-              PRIMARY KEY (`id`),
-              INDEX(type),
-              INDEX(name)
+            CREATE TABLE IF NOT EXISTS  user (
+              username VARCHAR(256) NOT NULL,
+              password VARCHAR(256) NOT NULL,
+              email VARCHAR(256) NOT NULL,
+              PRIMARY KEY (username)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """,
+            """
+             CREATE TABLE IF NOT EXISTS  auth (
+              authToken VARCHAR(256) NOT NULL,
+              username VARCHAR(256) NOT NULL,
+              PRIMARY KEY (authToken)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS  game (
+              gameID INT NOT NULL AUTO_INCREMENT,
+              whiteUsername VARCHAR(256),
+              blackUsername VARCHAR(256),
+              gameName VARCHAR(256) NOT NULL,
+              game TEXT NOT NULL,
+              PRIMARY KEY (gameID)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
 
 
-    private void configureDatabase() throws ResponseException {
+    //configureDatabase from petShop
+    private void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (Connection conn = DatabaseManager.getConnection()) {
             for (String statement : createStatements) {
@@ -122,7 +136,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to configure database: %s", ex.getMessage()));
+            ase: %s", ex.getMessage()));
         }
     }
 }
