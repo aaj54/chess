@@ -76,12 +76,11 @@ public class MySqlDataAccess implements DataAccess {
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (int i = 0; i < params.length; i++) {
-                    Object param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param instanceof Integer p) ps.setInt(i + 1, p);
-                    else if (param instanceof PetType p) ps.setString(i + 1, p.toString());
-                    else if (param == null) ps.setNull(i + 1, NULL);
+                for (int ii = 0; ii < params.length; ii++) {
+                    Object param = params[ii];
+                    if (param instanceof String p) ps.setString(ii + 1, p);
+                    else if (param instanceof Integer p) ps.setInt(ii + 1, p);
+                    else if (param == null) ps.setNull(ii + 1, NULL);
                 }
                 ps.executeUpdate();
 
@@ -89,11 +88,10 @@ public class MySqlDataAccess implements DataAccess {
                 if (rs.next()) {
                     return rs.getInt(1);
                 }
-
                 return 0;
             }
         } catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.Code.ServerError, String.format("unable to update database: %s, %s", statement, e.getMessage()));
+            throw new DataAccessException("Unable to update database: " + e.getMessage());
         }
     }
 
@@ -136,7 +134,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            ase: %s", ex.getMessage()));
+            throw new DataAccessException("Unable to configure database: " + ex.getMessage());
         }
     }
 }
