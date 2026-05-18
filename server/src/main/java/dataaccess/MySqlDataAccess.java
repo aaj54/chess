@@ -15,6 +15,14 @@ public class MySqlDataAccess implements DataAccess {
         configureDatabase();
     }
 
+    @Override
+    public void clear() throws DataAccessException
+    {
+        for (String table : new String[]{"auth", "game", "user"}) {
+            executeUpdate("TRUNCATE " + table);
+        }
+    }
+
     public Pet addPet(Pet pet) throws DataAccessException {
         var statement = "INSERT INTO pet (name, type, json) VALUES (?, ?, ?)";
         String json = new Gson().toJson(pet);
