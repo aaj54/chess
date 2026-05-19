@@ -31,6 +31,27 @@ public class MySqlDataAccess implements DataAccess {
         executeUpdate("INSERT INTO user (username, password, email) VALUES (?, ?, ?)",
                 user.username(), hashedPassword, user.email());
     }
+    //getAuth like getPet
+    @Override
+    public UserData getUser(String username) throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, password, email FROM user WHERE username=?";
+            try (PreparedStatement ps = conn.prepareStatement(statement))
+            {
+                ps.setString(1, username);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return new UserData(rs.getString("username"),
+                                rs.getString("password"),
+                                rs.getString("email"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to read user: " + e.getMessage());
+        }
+        return null;
+    }
 
     //getAuth like getPet
     @Override
