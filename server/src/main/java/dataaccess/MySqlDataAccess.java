@@ -2,6 +2,7 @@ package dataaccess;
 
 import com.google.gson.Gson;
 import model.*;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
 
@@ -23,11 +24,12 @@ public class MySqlDataAccess implements DataAccess {
         }
     }
 
-    public Pet addPet(Pet pet) throws DataAccessException {
-        var statement = "INSERT INTO pet (name, type, json) VALUES (?, ?, ?)";
-        String json = new Gson().toJson(pet);
-        int id = executeUpdate(statement, pet.name(), pet.type(), json);
-        return new Pet(id, pet.name(), pet.type());
+    //create user
+    @Override
+    public void createUser(UserData user) throws DataAccessException {
+        String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        executeUpdate("INSERT INTO user (username, password, email) VALUES (?, ?, ?)",
+                user.username(), hashedPassword, user.email());
     }
 
     public Pet getPet(int id) throws DataAccessException {
