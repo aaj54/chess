@@ -60,6 +60,26 @@ public class MySqlDataAccess implements DataAccess {
                 null, null, gameName, json);
     }
 
+    //getGame like getPet
+    @Override
+    public GameData getGame(int gameID) throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authToken, username FROM auth WHERE authToken=?";
+            try (PreparedStatement ps = conn.prepareStatement(statement))
+            {
+                ps.setInt(1, gameID);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return "??"
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to read game: " + e.getMessage());
+        }
+        return null;
+    }
+
     @Override
     public void createAuth(AuthData auth) throws DataAccessException {
         executeUpdate("INSERT INTO auth (authToken, username) VALUES (?, ?)",
