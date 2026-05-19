@@ -32,19 +32,23 @@ public class MySqlDataAccess implements DataAccess {
                 user.username(), hashedPassword, user.email());
     }
 
-    public Pet getPet(int id) throws DataAccessException {
+    //getAuth like getPet
+    @Override
+    public AuthData getAuth(String authToken) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT id, json FROM pet WHERE id=?";
-            try (PreparedStatement ps = conn.prepareStatement(statement)) {
-                ps.setInt(1, id);
+            var statement = "SELECT authToken, username FROM auth WHERE authToken=?";
+            try (PreparedStatement ps = conn.prepareStatement(statement))
+            {
+                ps.setString(1, authToken);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        return readPet(rs);
+                        return new AuthData(rs.getString("authToken"),
+                                rs.getString("username"));
                     }
                 }
             }
-        } catch (Exception e) {
-            throw new DataAccessException(DataAccessException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to read auth: " + e.getMessage());
         }
         return null;
     }
