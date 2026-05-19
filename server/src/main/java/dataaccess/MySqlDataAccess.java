@@ -53,6 +53,19 @@ public class MySqlDataAccess implements DataAccess {
         return null;
     }
 
+    @Override
+    public int createGame(String gameName) throws DataAccessException {
+        String json = new Gson().toJson(new chess.ChessGame());
+        return executeUpdate("INSERT INTO game (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)",
+                null, null, gameName, json);
+    }
+
+    @Override
+    public void createAuth(AuthData auth) throws DataAccessException {
+        executeUpdate("INSERT INTO auth (authToken, username) VALUES (?, ?)",
+                auth.authToken(), auth.username());
+    }
+
     //getAuth like getPet
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
