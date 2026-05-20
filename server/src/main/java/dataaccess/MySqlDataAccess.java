@@ -66,7 +66,7 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authToken, username FROM auth WHERE authToken=?";
+            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game WHERE gameID=?";;
             try (PreparedStatement ps = conn.prepareStatement(statement))
             {
                 ps.setInt(1, gameID);

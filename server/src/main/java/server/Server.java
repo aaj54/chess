@@ -2,10 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.*;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.json.JsonMapper;
@@ -15,16 +12,21 @@ import java.lang.reflect.Type;
 public class Server {
 
     private final Javalin javalin;
-
-    MemoryUserDAO userDAO = new MemoryUserDAO();
-    MemoryAuthDAO authDAO = new MemoryAuthDAO();
-    MemoryGameDAO gameDAO = new MemoryGameDAO();
-
-    ClearSer clearService = new ClearSer(userDAO, authDAO, gameDAO);
-    UserSer userService = new UserSer(userDAO, authDAO);
-    GameSer gameService = new GameSer(gameDAO, authDAO);
+    private final DataAccess dataAccess;
+    private final ClearSer clearService;
+    private final UserSer userService;
+    private final GameSer gameService;
 
     public Server() {
+        try {
+            dataAccess = new MySqlDataAccess();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        clearService = new ClearSer(dataAccess);
+        userService = new UserSer(dataAccess);
+        gameService = new GameSer(dataAccess);
+
         Gson gson = new GsonBuilder().create();
         JsonMapper gsonMapper = new JsonMapper() {
             @Override

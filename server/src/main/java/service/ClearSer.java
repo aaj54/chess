@@ -1,31 +1,20 @@
 package service;
 
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.*;
 
 public class ClearSer {
 
     //generate constructor
-    private final MemoryUserDAO userDAO;
-    private final MemoryAuthDAO authDAO;
-    private final MemoryGameDAO gameDAO;
+    private final DataAccess dataAccess;
 
-    public ClearSer(
-            MemoryUserDAO userDAO,
-            MemoryAuthDAO authDAO,
-            MemoryGameDAO gameDAO) {
+    public ClearSer(DataAccess dataAccess) {
 
-        this.userDAO = userDAO;
-        this.authDAO = authDAO;
-        this.gameDAO = gameDAO;
+        this.dataAccess = dataAccess;
     }
 
     //clear data function
     public void clear() {
 
-        userDAO.clear();
-        authDAO.clear();
-        gameDAO.clear();
+        dataAccess.clear();
     }
 }

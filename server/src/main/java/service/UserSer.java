@@ -1,5 +1,6 @@
 package service;
 
+import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
@@ -11,12 +12,10 @@ import java.util.UUID;
 public class UserSer {
 
     //generate constructor
-    private final MemoryUserDAO userDAO;
-    private final MemoryAuthDAO authDAO;
+    private final DataAccess dataAccess;
 
-    public UserSer(MemoryUserDAO userDAO, MemoryAuthDAO authDAO) {
-        this.userDAO = userDAO;
-        this.authDAO = authDAO;
+    public UserSer(DataAccess dataAccess) {
+        this.dataAccess = dataAccess;
     }
 
     public RegResult register(RegRequest request) throws DataAccessException {
@@ -29,10 +28,10 @@ public class UserSer {
         }
 
         UserData user = new UserData(request.username(), request.password(), request.email());
-        userDAO.createUser(user);
+        dataAccess.createUser(user);
 
         String token = UUID.randomUUID().toString();
-        authDAO.createAuth(new AuthData(token, request.username()));
+        dataAccess.createAuth(new AuthData(token, request.username()));
 
         return new RegResult(request.username(), token);
     }
@@ -42,20 +41,20 @@ public class UserSer {
             throw new DataAccessException("bad request");
         }
 
-        UserData user = userDAO.getUser(request.username());
+        UserData user = dataAccess.getUser(request.username());
         if (user == null || !user.password().equals(request.password())) {
             throw new DataAccessException("unauthorized");
         }
 
         String token = UUID.randomUUID().toString();
-        authDAO.createAuth(new AuthData(token, request.username()));
+        dataAccess.createAuth(new AuthData(token, request.username()));
         return new LoginResult(request.username(), token);
     }
 
     public void logout(String authToken) throws DataAccessException {
-        if (authDAO.getAuth(authToken) == null) {
+        if (dataAccess.getAuth(authToken) == null) {
             throw new DataAccessException("unauthorized");
         }
-        authDAO.deleteAuth(authToken);
+        dataAccess.deleteAuth(authToken);
     }
 }

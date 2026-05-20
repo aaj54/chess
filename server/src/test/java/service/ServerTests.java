@@ -1,9 +1,6 @@
 package service;
 
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryUserDAO;
-import dataaccess.MemoryGameDAO;
+import dataaccess.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,12 +13,10 @@ public class ServerTests {
 
     @BeforeEach
     void setup() {
-        MemoryUserDAO userDAO = new MemoryUserDAO();
-        MemoryAuthDAO authDAO = new MemoryAuthDAO();
-        MemoryGameDAO gameDAO = new MemoryGameDAO();
-        userService = new UserSer(userDAO, authDAO);
-        clearService = new ClearSer(userDAO, authDAO, gameDAO);
-        gameService = new GameSer(gameDAO, authDAO);
+        DataAccess dataAccess = new MemoryDataAccess();
+        userService = new UserSer(dataAccess);
+        clearService = new ClearSer(dataAccess);
+        gameService = new GameSer(dataAccess);
     }
 
 
