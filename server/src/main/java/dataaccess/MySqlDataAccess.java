@@ -72,7 +72,7 @@ public class MySqlDataAccess implements DataAccess {
                 ps.setInt(1, gameID);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        return //"??";
+                        return readGame(rs);
                     }
                 }
             }
@@ -123,7 +123,7 @@ public class MySqlDataAccess implements DataAccess {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        //"??"
+                        result.add(readGame(rs));
                     }
                 }
             }
@@ -139,11 +139,14 @@ public class MySqlDataAccess implements DataAccess {
         executeUpdate(statement, authToken);
     }
 
-    private Pet readPet(ResultSet rs) throws SQLException {
-        var id = rs.getInt("id");
-        var json = rs.getString("json");
-        Pet pet = new Gson().fromJson(json, Pet.class);
-        return pet.setId(id);
+    private GameData readGame(ResultSet rs) throws SQLException {
+        var gameID = rs.getInt("gameID");
+        var white = rs.getString("whiteUsername");
+        var black = rs.getString("blackUsername");
+        var json = rs.getString("game");
+        var gameName = rs.getString("gameName");
+        chess.ChessGame game = new Gson().fromJson(json, chess.ChessGame.class);
+        return new GameData(gameID, white, black, gameName, game);
     }
 
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
