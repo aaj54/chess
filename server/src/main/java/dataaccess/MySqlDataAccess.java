@@ -5,6 +5,8 @@ import model.*;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -70,7 +72,7 @@ public class MySqlDataAccess implements DataAccess {
                 ps.setInt(1, gameID);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        return "??"
+                        return //"??";
                     }
                 }
             }
@@ -78,6 +80,13 @@ public class MySqlDataAccess implements DataAccess {
             throw new DataAccessException("Unable to read game: " + e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public void updateGame(GameData game) throws DataAccessException {
+        String json = new Gson().toJson(game.game());
+        executeUpdate("UPDATE game SET whiteUsername=?, blackUsername=?, gameName=?, game=? WHERE gameID=?",
+                game.whiteUsername(), game.blackUsername(), game.gameName(), json, game.gameID());
     }
 
     @Override
@@ -107,19 +116,19 @@ public class MySqlDataAccess implements DataAccess {
         return null;
     }
 
-    public PetList listPets() throws DataAccessException {
-        var result = new PetList();
+    public Collection<GameData> listGames() throws DataAccessException {
+        var result = new ArrayList<GameData>();
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT id, json FROM pet";
+            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        result.add(readPet(rs));
+                        //"??"
                     }
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(DataAccessException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException("Unable to list games: " + e.getMessage());
         }
         return result;
     }
