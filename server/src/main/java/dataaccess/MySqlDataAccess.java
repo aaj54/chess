@@ -165,9 +165,16 @@ public class MySqlDataAccess implements DataAccess {
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (int ii = 0; ii < params.length; ii++) {
                     Object param = params[ii];
-                    if (param instanceof String p) ps.setString(ii + 1, p);
-                    else if (param instanceof Integer p) ps.setInt(ii + 1, p);
-                    else if (param == null) ps.setNull(ii + 1, NULL);
+                    if (param instanceof String p)
+                    {
+                        ps.setString(ii + 1, p);
+                    } else if (param instanceof Integer p)
+                    {
+                        ps.setInt(ii + 1, p);
+                    } else if (param == null)
+                    {
+                        ps.setNull(ii + 1, NULL);
+                    }
                 }
 
                 int rowsAffected = ps.executeUpdate();
