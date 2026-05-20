@@ -133,14 +133,10 @@ public class MySqlDataAccess implements DataAccess {
         return result;
     }
 
-    public void deletePet(Integer id) throws DataAccessException {
-        var statement = "DELETE FROM pet WHERE id=?";
-        executeUpdate(statement, id);
-    }
-
-    public void deleteAllPets() throws DataAccessException {
-        var statement = "TRUNCATE pet";
-        executeUpdate(statement);
+    @Override
+    public void deleteAuth(String authToken) throws DataAccessException {
+        var statement = "DELETE FROM auth WHERE authToken=?";
+        executeUpdate(statement, authToken);
     }
 
     private Pet readPet(ResultSet rs) throws SQLException {
