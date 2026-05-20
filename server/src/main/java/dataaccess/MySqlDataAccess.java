@@ -30,8 +30,15 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public void createUser(UserData user) throws DataAccessException {
         String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
-        executeUpdate("INSERT INTO user (username, password, email) VALUES (?, ?, ?)",
-                user.username(), hashedPassword, user.email());
+        try {
+            executeUpdate("INSERT INTO user (username, password, email) VALUES (?, ?, ?)",
+                    user.username(), hashedPassword, user.email());
+        } catch (DataAccessException e) {
+            if (e.getMessage().contains("Duplicate entry")) {
+                throw new DataAccessException("already taken");
+            }
+            throw e;
+        }
     }
     //getAuth like getPet
     @Override
@@ -135,6 +142,10 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
+        AuthData auth = getAuth(authToken);
+        if (auth == null) {
+            throw new DataAccessException("unauthorized");
+        }
         var statement = "DELETE FROM auth WHERE authToken=?";
         executeUpdate(statement, authToken);
     }

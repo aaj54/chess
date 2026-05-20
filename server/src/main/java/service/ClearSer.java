@@ -13,7 +13,7 @@ public class ClearSer {
     }
 
     //clear data function
-    public void clear() {
+    public void clear() throws DataAccessException {
 
         dataAccess.clear();
     }

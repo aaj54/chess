@@ -70,8 +70,10 @@ public class Server {
         } catch (DataAccessException e) {
             if ("bad request".equals(e.getMessage())) {
                 ctx.status(400).json(new ErrorResp("Error: bad request"));
-            } else {
+            } else if ("already taken".equals(e.getMessage())) {
                 ctx.status(403).json(new ErrorResp("Error: already taken"));
+            } else {
+                throw new RuntimeException(e);
             }
         } catch (Exception e) {
             ctx.status(500).json(new ErrorResp("Error: " + e.getMessage()));
@@ -86,8 +88,10 @@ public class Server {
         } catch (DataAccessException e) {
             if ("bad request".equals(e.getMessage())) {
                 ctx.status(400).json(new ErrorResp("Error: bad request"));
-            } else {
+            } else if ("unauthorized".equals(e.getMessage())) {
                 ctx.status(401).json(new ErrorResp("Error: unauthorized"));
+            } else {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -98,7 +102,11 @@ public class Server {
             userService.logout(authToken);
             ctx.status(200).result("{}");
         } catch (DataAccessException e) {
-            ctx.status(401).json(new ErrorResp("Error: unauthorized"));
+            if ("unauthorized".equals(e.getMessage())) {
+                ctx.status(401).json(new ErrorResp("Error: unauthorized"));
+            } else {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -111,8 +119,10 @@ public class Server {
         } catch (DataAccessException e) {
             if ("unauthorized".equals(e.getMessage())) {
                 ctx.status(401).json(new ErrorResp("Error: unauthorized"));
-            } else {
+            } else if ("bad request".equals(e.getMessage())) {
                 ctx.status(400).json(new ErrorResp("Error: bad request"));
+            } else {
+                throw new RuntimeException(e); // global handler return 500
             }
         }
     }
@@ -123,7 +133,14 @@ public class Server {
             ListGameRes res = gameService.listGames(authToken);
             ctx.status(200).json(res);
         } catch (DataAccessException e) {
-            ctx.status(401).json(new ErrorResp("Error: unauthorized"));
+            if ("unauthorized".equals(e.getMessage()))
+            {
+                ctx.status(401).json(new ErrorResp("Error: unauthorized"));
+            }
+            else
+            {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -138,8 +155,10 @@ public class Server {
                 ctx.status(401).json(new ErrorResp("Error: unauthorized"));
             } else if ("already taken".equals(e.getMessage())) {
                 ctx.status(403).json(new ErrorResp("Error: already taken"));
-            } else {
+            } else if("bad request".equals(e.getMessage())) {
                 ctx.status(400).json(new ErrorResp("Error: bad request"));
+            } else {
+                throw new RuntimeException(e); //  global handler return 500
             }
         }
     }
