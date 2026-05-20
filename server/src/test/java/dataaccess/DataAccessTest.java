@@ -1,142 +1,161 @@
 package dataaccess;
 
+import model.AuthData;
+import model.GameData;
+import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.*;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DataAccessTest {
+
     private DataAccess dataAccess;
 
-    private UserSer userService;
-    private ClearSer clearService;
-    private GameSer gameService;
-
     @BeforeEach
-    void setup() {
-        DataAccess dataAccess = new MemoryDataAccess();
-        userService = new UserSer(dataAccess);
-        clearService = new ClearSer(dataAccess);
-        gameService = new GameSer(dataAccess);
+    void setup() throws DataAccessException{
+        dataAccess = new MySqlDataAccess();
+        dataAccess.clear();
     }
-
 
     //test clear
     @Test
-    void clearSuccess() throws Exception {
-        userService.register(new RegRequest("user", "pass", "e@mail.com"));
-        clearService.clear();
-        assertDoesNotThrow(() -> userService.register(new RegRequest("user", "pass", "e@mail.com")));
+    void clearSuccess() throws DataAccessException {
+        dataAccess.createUser(new UserData("user", "pass", "e@mail.com"));
+        dataAccess.clear();
+        assertDoesNotThrow(() -> dataAccess.createUser(new UserData("user", "pass", "e@mail.com")));
     }
 
-    //test register success
+    //test new user success
     @Test
-    void regSuccess() throws Exception
+    void createUserSuccess() throws DataAccessException
     {
-        RegResult result = userService.register(new RegRequest("user", "pass", "e@mail.com"));
-        assertNotNull(result.authToken());
-        assertEquals("user", result.username());
+        dataAccess.createUser(new UserData("user", "pass", "e@mail.com"));
+        assertNotNull(dataAccess.getUser("user"));
     }
 
     //test register username duplicate
     @Test
-    void regDuplicate() throws Exception
+    void userDuplicate() throws DataAccessException
     {
-        userService.register(new RegRequest("user", "pass", "e@mail.com"));
+        dataAccess.createUser(new UserData("user", "pass", "e@mail.com"));
         assertThrows(DataAccessException.class, () ->
-                userService.register(new RegRequest("user", "pass", "e@mail.com")));
+                dataAccess.createUser(new UserData("user", "pass", "e@mail.com")));
+    }
+
+    //test get user
+    @Test
+    void getUser() throws DataAccessException
+    {
+        dataAccess.createUser(new UserData("user", "pass", "e@mail.com"));
+        assertNotNull(dataAccess.getUser("user"));
+    }
+
+    //make sure no user is grabbed is there are none
+    @Test
+    void getUserNotFound() throws DataAccessException {
+        assertNull(dataAccess.getUser("nonexistent"));
     }
 
     //test login success
     @Test
-    void loginSuccess() throws DataAccessException {
-        userService.register(new RegRequest("user", "pass", "e@mail.com"));
-        LoginResult result = userService.login(new LoginUser("user", "pass"));
-        assertNotNull(result.authToken());
-        assertEquals("user", result.username());
+    void creatAuthSuccess() throws DataAccessException {
+        dataAccess.createAuth(new AuthData("user", "pass"));
+        assertNotNull(dataAccess.getAuth("user"));
     }
 
     //test login fail
     @Test
-    void loginWrongPassword() throws DataAccessException {
-        userService.register(new RegRequest("user", "pass", "e@mail.com"));
+    void createAuthDuplicate() throws DataAccessException {
+        dataAccess.createAuth(new AuthData("user", "wrongpass"));
         assertThrows(DataAccessException.class, () ->
-                userService.login(new LoginUser("user", "wrongpass")));
+                dataAccess.createAuth(new AuthData("user", "wrongpass")));
     }
 
-    //successful logout
+    //test get auth
     @Test
-    void logoutSuccess() throws Exception {
-        userService.register(new RegRequest("user", "pass", "e@mail.com"));
-        LoginResult result = userService.login(new LoginUser("user", "pass"));
-        assertDoesNotThrow(() -> userService.logout(result.authToken()));
+    void getAuth() throws DataAccessException
+    {
+        dataAccess.createAuth(new AuthData("user", "pass"));
+        assertNotNull(dataAccess.getAuth("user"));
     }
 
-    //not successful lout
+    //make sure no auth is grabbed is there are none
     @Test
-    void logoutInvalidToken() {
-        assertThrows(DataAccessException.class, () -> userService.logout("invalid-token"));
+    void getAuthNotFound() throws DataAccessException {
+        assertNull(dataAccess.getAuth("nonexistent"));
+    }
+
+    // delete the auth
+    @Test
+    void deleteAuthSuccess() throws DataAccessException {
+        dataAccess.createAuth(new AuthData("user", "pass"));
+        dataAccess.deleteAuth("user");
+        assertNull(dataAccess.getAuth("user"));
+    }
+
+    //make sure no auth if deleted make sure runs okay with no errors
+    @Test
+    void  deleteAuthNotFound() throws DataAccessException
+    {
+        assertDoesNotThrow(() -> dataAccess.deleteAuth("badtoken"));
     }
 
     //test createGame success
     @Test
     void creGameSuccess() throws DataAccessException {
-        userService.register(new RegRequest("user", "pass", "e@mail.com"));
-        LoginResult login = userService.login(new LoginUser("user", "pass"));
-        CreateGameResult result = gameService.createGame(login.authToken(), new CreateGameRequest("name"));
-        assertNotNull(result);
-        assertTrue(result.gameID() > 0);
+        int id = dataAccess.createGame("game");
+        assertTrue(id > 0);
     }
 
     //test create Game fail
     @Test
-    void creGameFail() {
-        assertThrows(DataAccessException.class, () -> gameService.createGame("badToken",
-                new CreateGameRequest("name")));
+    void creGameFail() throws DataAccessException {
+        assertThrows(DataAccessException.class, () -> dataAccess.createGame(null));
+    }
+
+    //test get game
+    @Test
+    void getGame() throws DataAccessException
+    {
+        int gameID = dataAccess.createGame("game");
+        assertNotNull(dataAccess.getGame(gameID));
+    }
+
+    //make sure no game is grabbed is there are none
+    @Test
+    void getGameNotFound() throws DataAccessException {
+        assertNull(dataAccess.getGame(1));
     }
 
     //test list game positive test
     @Test
-    void listGamesSuccess() throws Exception {
-        userService.register(new RegRequest("user", "pass", "e@mail.com"));
-        LoginResult login = userService.login(new LoginUser("user", "pass"));
-        gameService.createGame(login.authToken(), new CreateGameRequest("myGame"));
-        ListGameRes result = gameService.listGames(login.authToken());
-        assertFalse(result.games().isEmpty());
+    void listGamesSuccess() throws DataAccessException {
+        dataAccess.createGame("game1");
+        dataAccess.createGame("game2");
+        assertFalse(dataAccess.listGames().isEmpty());
     }
 
     //test list game fail
     @Test
-    void listGamesFail() {
-        assertThrows(DataAccessException.class, () ->
-                gameService.listGames("bad-token"));
+    void listGamesFail() throws DataAccessException{
+        assertTrue(dataAccess.listGames().isEmpty());
     }
 
 
     @Test
-    void joinGameSuccess() throws Exception {
-        userService.register(new RegRequest("user", "pass", "e@mail.com"));
-        LoginResult login = userService.login(new LoginUser("user", "pass"));
-        CreateGameResult game = gameService.createGame(login.authToken(), new CreateGameRequest("myGame"));
-        assertDoesNotThrow(() -> gameService.joinGame(login.authToken(),
-                new JoinGame("WHITE", game.gameID())));
+    void updateGameSuccess() throws DataAccessException {
+        int id = dataAccess.createGame("myGame");
+        GameData game = dataAccess.getGame(id);
+        dataAccess.updateGame(new GameData(id, "white", null, "myGame", game.game()));
+        assertEquals("white", dataAccess.getGame(id).whiteUsername());
     }
 
     @Test
-    void joinGameAlreadyTaken() throws Exception {
-        userService.register(new RegRequest("user1", "pass", "e@mail.com"));
-        userService.register(new RegRequest("user2", "passw", "e2@mail.com"));
-        LoginResult login1 = userService.login(new LoginUser("user1", "pass"));
-        LoginResult login2 = userService.login(new LoginUser("user2", "passw"));
-        CreateGameResult game = gameService.createGame(login1.authToken(), new CreateGameRequest("myGame"));
-        gameService.joinGame(login1.authToken(), new JoinGame("WHITE", game.gameID()));
+    void updateFail() throws DataAccessException {
         assertThrows(DataAccessException.class, () ->
-                gameService.joinGame(login2.authToken(), new JoinGame("WHITE", game.gameID())));
+                dataAccess.updateGame(new GameData(9999, null, null,
+                        "myGame", new chess.ChessGame())));
     }
 }

@@ -92,8 +92,12 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public void updateGame(GameData game) throws DataAccessException {
         String json = new Gson().toJson(game.game());
-        executeUpdate("UPDATE game SET whiteUsername=?, blackUsername=?, gameName=?, game=? WHERE gameID=?",
+        int rowsAffected = executeUpdate(
+                "UPDATE game SET whiteUsername=?, blackUsername=?, gameName=?, game=? WHERE gameID=?",
                 game.whiteUsername(), game.blackUsername(), game.gameName(), json, game.gameID());
+        if (rowsAffected == 0) {
+            throw new DataAccessException("game not found");
+        }
     }
 
     @Override
@@ -142,10 +146,6 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        AuthData auth = getAuth(authToken);
-        if (auth == null) {
-            throw new DataAccessException("unauthorized");
-        }
         var statement = "DELETE FROM auth WHERE authToken=?";
         executeUpdate(statement, authToken);
     }
@@ -169,13 +169,13 @@ public class MySqlDataAccess implements DataAccess {
                     else if (param instanceof Integer p) ps.setInt(ii + 1, p);
                     else if (param == null) ps.setNull(ii + 1, NULL);
                 }
-                ps.executeUpdate();
 
+                int rowsAffected = ps.executeUpdate();
                 ResultSet rs = ps.getGeneratedKeys();
                 if (rs.next()) {
                     return rs.getInt(1);
                 }
-                return 0;
+                return rowsAffected;
             }
         } catch (SQLException e) {
             throw new DataAccessException("Unable to update database: " + e.getMessage());
