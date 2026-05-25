@@ -103,43 +103,63 @@ public class ChessClient {
         return "Logged in as " + auth.username();
     }
 
-    public String rescuePet(String... params) throws ResponseException {
+    private String create(String[] params) throws Exception {
         assertSignedIn();
-        if (params.length >= 2) {
-            String name = params[0];
-            PetType type = PetType.valueOf(params[1].toUpperCase());
-            var pet = new Pet(0, name, type);
-            pet = server.addPet(pet);
-            return String.format("You rescued %s. Assigned ID: %d", pet.name(), pet.id());
+        if (params.length < 1) {
+            return "Usage: create <game name>";
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <name> <CAT|DOG|FROG>");
+        String gameName = String.join(" ", params);
+        server.createGame(auth.authToken(), gameName);
+        return "Created game: " + gameName;
     }
 
-    public String listPets() throws ResponseException {
+    private String list() throws Exception {
         assertSignedIn();
-        PetList pets = server.listPets();
-        var result = new StringBuilder();
-        var gson = new Gson();
-        for (Pet pet : pets) {
-            result.append(gson.toJson(pet)).append('\n');
+        var games = server.listGames(auth.authToken());
+        gameList = new ArrayList<>(games);
+        if (gameList.isEmpty()) {
+            return "No games available";
         }
-        return result.toString();
+        java.lang.StringBuilder gameInfo = new StringBuilder();
+        for (int i = 0; i < gameList.size(); i++) {
+            GameData g = gameList.get(i);
+            gameInfo.append(String.format("%d. %s | White: %s | Black: %s%n",
+                    i + 1,
+                    g.gameName(),
+                    g.whiteUsername() != null ? g.whiteUsername() : "open",
+                    g.blackUsername() != null ? g.blackUsername() : "open"));
+        }
+        return gameInfo.toString();
     }
 
-    public String adoptPet(String... params) throws ResponseException {
+    private String playGame(String[] params) throws Exception {
         assertSignedIn();
-        if (params.length == 1) {
-            try {
-                int id = Integer.parseInt(params[0]);
-                Pet pet = getPet(id);
-                if (pet != null) {
-                    server.deletePet(id);
-                    return String.format("%s says %s", pet.name(), pet.sound());
-                }
-            } catch (NumberFormatException ignored) {
-            }
+        if (params.length != 2)
+        {
+            return "Usage: play <game number> <WHITE|BLACK>";
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <pet id>");
+        int idx;
+        try {
+            idx = Integer.parseInt(params[0])-1;
+        } catch (NumberFormatException e) {
+            return "Invalid game number";
+        }
+        if (gameList.isEmpty())
+        {
+            return "Please create a game";
+        }
+        if (idx < 0 || idx >= gameList.size()) {
+            return "Invalid game number";
+        }
+        String color = params[1].toUpperCase();
+        if (!color.equals("WHITE") && !color.equals("BLACK")) {
+            return "Color must be WHITE or BLACK";
+        }
+        int gameID = gameList.get(idx).gameID();
+        server.joinGame(auth.authToken(), color, gameID);
+        //Draw board
+        return "";
+
     }
 
     public String adoptAllPets() throws ResponseException {
