@@ -53,23 +53,36 @@ public class ChessClient {
 
 
     public String eval(String input) {
-        try {
-            String[] tokens = input.toLowerCase().split(" ");
-            String cmd = (tokens.length > 0) ? tokens[0] : "help";
-            String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+        if (input == null || input.isBlank())
+        {
+            return help();
+        }
+        String[] tokens = input.toLowerCase().split(" ");
+        String cmd = (tokens.length > 0) ? tokens[0] : "help";
+        String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+
+        if (state == State.SIGNEDOUT)
+        {
             return switch (cmd) {
-                case "signin" -> signIn(params);
-                case "rescue" -> rescuePet(params);
-                case "list" -> listPets();
-                case "signout" -> signOut();
-                case "adopt" -> adoptPet(params);
-                case "adoptall" -> adoptAllPets();
+                case "register" -> signIn(params);
+                case "login" -> rescuePet(params);
                 case "quit" -> "quit";
                 default -> help();
             };
-        } catch (ResponseException ex) {
-            return ex.getMessage();
+        } else
+        {
+            return switch (cmd)
+            {
+                case "create" -> signIn(params);
+                case "list" -> rescuePet(params);
+                case "join <ID> [WHITE|BLACK}" -> listPets();
+                case "observe <ID>" -> signOut();
+                case "logout" -> adoptPet(params);
+                case "quit" -> "quit";
+                default -> help();
+            };
         }
+    }
     }
 
     public String signIn(String... params) throws ResponseException {
