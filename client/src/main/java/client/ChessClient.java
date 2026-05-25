@@ -162,6 +162,34 @@ public class ChessClient {
 
     }
 
+    private String observeGame(String[] params) throws Exception {
+        assertSignedIn();
+        if (params.length != 1)
+        {
+            return "Usage: observe <game number>";
+        }
+        int idx;
+        try {
+            idx = Integer.parseInt(params[0])-1;
+        } catch (NumberFormatException e) {
+            return "Invalid game number";
+        }
+        if (gameList.isEmpty())
+        {
+            return "Please create a game";
+        }
+        if (idx < 0 || idx >= gameList.size()) {
+            return "Invalid game number";
+        }
+        String color = params[1].toUpperCase();
+        if (!color.equals("WHITE") && !color.equals("BLACK")) {
+            return "Color must be WHITE or BLACK";
+        }
+        //Draw board
+        return "";
+
+    }
+
     public String adoptAllPets() throws ResponseException {
         assertSignedIn();
         var buffer = new StringBuilder();
