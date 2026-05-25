@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Scanner;
 import model.*;
 
-import com.google.gson.Gson;
 
 public class ChessClient {
     private final ServerFacade server;
@@ -151,7 +150,7 @@ public class ChessClient {
         }
         int gameID = gameList.get(idx).gameID();
         server.joinGame(auth.authToken(), color, gameID);
-        //Draw board
+        DrawBoard.draw(color.equals("BLACK"));
         return "";
 
     }
@@ -175,7 +174,7 @@ public class ChessClient {
         if (idx < 0 || idx >= gameList.size()) {
             return "Invalid game number";
         }
-        //Draw board
+        DrawBoard.draw(false);
         return "";
 
     }

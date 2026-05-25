@@ -34,10 +34,31 @@ public class DrawBoard {
         }
     }
     private static void printColHeaders(String[] cols, boolean flip) {
-
+        System.out.print(SET_BG_COLOR_BLUE + "   ");
+        for (int ii = 0; ii < 8; ii++)
+        {
+            int idx = flip ? 7 - ii : ii;
+            System.out.print(" " + cols[idx] + " ");
+        }
+        System.out.println("   " + RESET_BG_COLOR);
     }
-    private static String getPieceStr(ChessPiece piece) {
 
+    private static String getPieceStr(ChessPiece piece) {
+        if (piece == null) {
+            return EMPTY;
+        }
+        boolean isWhite = piece.getTeamColor() == ChessGame.TeamColor.WHITE;
+        String color = isWhite ? SET_TEXT_COLOR_RED : SET_TEXT_COLOR_BLUE;
+        String symbol = switch (piece.getPieceType())
+        {
+            case KING -> isWhite ? WHITE_KING : BLACK_KING;
+            case QUEEN -> isWhite ? WHITE_QUEEN : BLACK_QUEEN;
+            case ROOK -> isWhite ? WHITE_ROOK: BLACK_ROOK;
+            case BISHOP -> isWhite ? WHITE_BISHOP: BLACK_BISHOP;
+            case KNIGHT -> isWhite ? WHITE_KNIGHT : BLACK_KNIGHT;
+            case PAWN -> isWhite ? WHITE_PAWN : BLACK_PAWN;
+        };
+        return color + symbol + RESET_TEXT_COLOR;
     }
 }
 
