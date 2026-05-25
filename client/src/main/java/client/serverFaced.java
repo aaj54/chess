@@ -26,9 +26,17 @@ public class ServerFacade {
         return handleResponse(response, AuthData.class);
     }
 
-    public void deletePet(int id) throws ResponseException {
-        var path = String.format("/pet/%s", id);
-        var request = buildRequest("DELETE", path, null);
+    public AuthData login(String username, String password) throws Exception
+    {
+        record loginRequest(String username, String password) {}
+        var request = buildRequest("POST", "/session", new loginRequest(username,password), null);
+        var response = sendRequest(request);
+        return handleResponse(response, AuthData.class);
+    }
+
+    public void logout(String authToken) throws Exception {
+        var path = String.format("/pet/%s", authToken);
+        var request = buildRequest("DELETE", "/session", null, authToken);
         var response = sendRequest(request);
         handleResponse(response, null);
     }
