@@ -1,7 +1,6 @@
 package client;
 
 import com.google.gson.Gson;
-import exception.ResponseException;
 import model.*;
 
 import java.net.*;
@@ -13,15 +12,18 @@ import java.net.http.HttpResponse.BodyHandlers;
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
     private final String serverUrl;
+    private final Gson Gson = new Gson();
 
-    public ServerFacade(String url) {
-        serverUrl = url;
+    public ServerFacade(int port) {
+        serverUrl = "http://localhost:" + port;
     }
 
-    public Pet addPet(Pet pet) throws ResponseException {
-        var request = buildRequest("POST", "/pet", pet);
+    public AuthData register(String username, String password, String email) throws Exception
+    {
+        record RegRequest(String username, String password, String email) {}
+        var request = buildRequest("POST", "/user", new RegRequest(username,password, email), null);
         var response = sendRequest(request);
-        return handleResponse(response, Pet.class);
+        return handleResponse(response, AuthData.class);
     }
 
     public void deletePet(int id) throws ResponseException {
@@ -42,12 +44,17 @@ public class ServerFacade {
         return handleResponse(response, PetList.class);
     }
 
-    private HttpRequest buildRequest(String method, String path, Object body) {
+    private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
-                .method(method, makeRequestBody(body));
+                .method(method, body != null
+                        ? BodyPublishers.ofString(Gson.toJson(body))
+                        : BodyPublishers.noBody());
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
+        }
+        if (authToken != null) {
+            request.header("authorization", authToken);
         }
         return request.build();
     }
