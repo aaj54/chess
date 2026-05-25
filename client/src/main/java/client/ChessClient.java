@@ -39,14 +39,8 @@ public class ChessClient {
         System.out.println("Bye!");
     }
 
-
-    private void notify(Notification notification) {
-        System.out.println(RED + notification.message());
-        printPrompt();
-    }
-
     private void printPrompt() {
-        System.out.print("\n" + RESET + ">>> " + GREEN);
+        System.out.print(state == State.SIGNEDOUT ? "\n[LOGGED_OUT] >>> " : "\n[LOGGED_IN] >>> ");
     }
 
 
@@ -71,8 +65,8 @@ public class ChessClient {
                 return switch (cmd) {
                     case "create" -> create(params);
                     case "list" -> list();
-                    case "join <ID> [WHITE|BLACK}" -> playGame();
-                    case "observe <ID>" -> observeGame();
+                    case "play" -> playGame(params);
+                    case "observe" -> observeGame(params);
                     case "logout" -> logout();
                     case "quit" -> "quit";
                     default -> help();
@@ -181,24 +175,9 @@ public class ChessClient {
         if (idx < 0 || idx >= gameList.size()) {
             return "Invalid game number";
         }
-        String color = params[1].toUpperCase();
-        if (!color.equals("WHITE") && !color.equals("BLACK")) {
-            return "Color must be WHITE or BLACK";
-        }
         //Draw board
         return "";
 
-    }
-
-    public String adoptAllPets() throws ResponseException {
-        assertSignedIn();
-        var buffer = new StringBuilder();
-        for (Pet pet : server.listPets()) {
-            buffer.append(String.format("%s says %s%n", pet.name(), pet.sound()));
-        }
-
-        server.deleteAllPets();
-        return buffer.toString();
     }
 
     private String logout() throws Exception {
@@ -209,35 +188,32 @@ public class ChessClient {
         return "Logged out successfully";
     }
 
-    private Pet getPet(int id) throws ResponseException {
-        for (Pet pet : server.listPets()) {
-            if (pet.id() == id) {
-                return pet;
-            }
-        }
-        return null;
-    }
 
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
-                    - signIn <yourname>
-                    - quit
+                    Commands:
+                        register <username> <password> <email>
+                        login <username> <password>
+                        quit
+                        help
                     """;
         }
         return """
-                - list
-                - adopt <pet id>
-                - rescue <name> <CAT|DOG|FROG|FISH>
-                - adoptAll
-                - signOut
-                - quit
+                Commands:
+                    create <game name>
+                    list
+                    play <game number> <WHITE|BLACK>
+                    observe <game number>
+                    logout
+                    quit
+                    help
                 """;
     }
 
-    private void assertSignedIn() throws ResponseException {
+    private void assertSignedIn() throws Exception {
         if (state == State.SIGNEDOUT) {
-            throw new ResponseException(ResponseException.Code.ClientError, "You must sign in");
+            throw new Exception("You must sign in");
         }
     }
 }
