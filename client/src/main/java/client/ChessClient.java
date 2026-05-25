@@ -1,26 +1,23 @@
 package client;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
+import model.*;
 
 import com.google.gson.Gson;
-import exception.ResponseException;
-import client.websocket.NotificationHandler;
-import server.ServerFacade;
-import client.websocket.WebSocketFacade;
-import webSocketMessages.Notification;
 
 import static client.EscapeSequences.*;
 
-public class ChessClient implements NotificationHandler {
-    private String visitorName = null;
+public class ChessClient {
     private final ServerFacade server;
-    private final WebSocketFacade ws;
+    private AuthData auth = null;
+    private List<GameData> gameList = new ArrayList<>();
     private State state = State.SIGNEDOUT;
 
-    public ChessClient(String serverUrl) throws ResponseException {
-        server = new ServerFacade(serverUrl);
-        ws = new WebSocketFacade(serverUrl, this);
+    public ChessClient(int port) {
+        server = new ServerFacade(port);
     }
 
     public void run() {
