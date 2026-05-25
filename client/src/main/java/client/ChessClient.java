@@ -21,7 +21,7 @@ public class ChessClient {
     }
 
     public void run() {
-        System.out.println(LOGO + " Welcome to the pet store. Sign in to start.");
+        System.out.println(" \uD83D\uDC51 Welcome to 240 chess. Type Help to get started.");
         System.out.print(help());
 
         Scanner scanner = new Scanner(System.in);
@@ -32,13 +32,13 @@ public class ChessClient {
 
             try {
                 result = eval(line);
-                System.out.print(BLUE + result);
+                System.out.println(result);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
             }
         }
-        System.out.println();
+        System.out.println("Bye!");
     }
 
 
