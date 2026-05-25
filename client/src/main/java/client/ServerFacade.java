@@ -5,15 +5,15 @@ import model.*;
 
 import java.net.*;
 import java.net.http.*;
-import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Collection;
+import java.util.Map;
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
     private final String serverUrl;
-    private final Gson Gson = new Gson();
+    private final Gson gson = new Gson();
 
     public ServerFacade(int port) {
         serverUrl = "http://localhost:" + port;
@@ -37,7 +37,6 @@ public class ServerFacade {
 
     public void logout(String authToken) throws Exception
     {
-        var path = String.format("/pet/%s", authToken);
         var request = buildRequest("DELETE", "/session", null, authToken);
         var response = sendRequest(request);
         handleResponse(response, null);
@@ -67,11 +66,19 @@ public class ServerFacade {
         return res.gameID();
     }
 
+    public void joinGame(String authToken, String playerColor,  int gameID) throws Exception
+    {
+        record JoinGameRequest(String playerColor, int gameID) {}
+        var request = buildRequest("PUT", "/game", new JoinGameRequest(playerColor, gameID), authToken);
+        var response = sendRequest(request);
+        handleResponse(response, null);
+    }
+
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, body != null
-                        ? BodyPublishers.ofString(Gson.toJson(body))
+                        ? BodyPublishers.ofString(gson.toJson(body))
                         : BodyPublishers.noBody());
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
@@ -82,31 +89,17 @@ public class ServerFacade {
         return request.build();
     }
 
-    private BodyPublisher makeRequestBody(Object request) {
-        if (request != null) {
-            return BodyPublishers.ofString(new Gson().toJson(request));
-        } else {
-            return BodyPublishers.noBody();
-        }
+
+    private HttpResponse<String> sendRequest(HttpRequest request) throws Exception {
+        return client.send(request, BodyHandlers.ofString());
     }
 
-    private HttpResponse<String> sendRequest(HttpRequest request) throws ResponseException {
-        try {
-            return client.send(request, BodyHandlers.ofString());
-        } catch (Exception ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-        }
-    }
-
-    private <T> T handleResponse(HttpResponse<String> response, Class<T> responseClass) throws ResponseException {
+    private <T> T handleResponse(HttpResponse<String> response, Class<T> responseClass) throws Exception {
         var status = response.statusCode();
         if (!isSuccessful(status)) {
-            var body = response.body();
-            if (body != null) {
-                throw ResponseException.fromJson(body);
-            }
-
-            throw new ResponseException(ResponseException.fromHttpStatusCode(status), "other failure: " + status);
+            var error = gson.fromJson(response.body(), Map.class);
+            String message = error != null ? (String) error.get("message") : "Error: " + status;
+            throw new Exception(message);
         }
 
         if (responseClass != null) {
