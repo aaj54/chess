@@ -8,8 +8,6 @@ import model.*;
 
 import com.google.gson.Gson;
 
-import static client.EscapeSequences.*;
-
 public class ChessClient {
     private final ServerFacade server;
     private AuthData auth = null;
@@ -42,7 +40,7 @@ public class ChessClient {
     }
 
 
-    public void notify(Notification notification) {
+    private void notify(Notification notification) {
         System.out.println(RED + notification.message());
         printPrompt();
     }
@@ -57,42 +55,43 @@ public class ChessClient {
         {
             return help();
         }
-        String[] tokens = input.toLowerCase().split(" ");
-        String cmd = (tokens.length > 0) ? tokens[0] : "help";
-        String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+        try {
+            String[] tokens = input.toLowerCase().split(" ");
+            String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
 
-        if (state == State.SIGNEDOUT)
+            if (state == State.SIGNEDOUT) {
+                return switch (cmd) {
+                    case "register" -> register(params);
+                    case "login" -> login(params);
+                    case "quit" -> "quit";
+                    default -> help();
+                };
+            } else {
+                return switch (cmd) {
+                    case "create" -> create(params);
+                    case "list" -> list();
+                    case "join <ID> [WHITE|BLACK}" -> playGame();
+                    case "observe <ID>" -> observeGame();
+                    case "logout" -> logout();
+                    case "quit" -> "quit";
+                    default -> help();
+                };
+            }
+        } catch (Exception e)
         {
-            return switch (cmd) {
-                case "register" -> signIn(params);
-                case "login" -> rescuePet(params);
-                case "quit" -> "quit";
-                default -> help();
-            };
-        } else
-        {
-            return switch (cmd)
-            {
-                case "create" -> signIn(params);
-                case "list" -> rescuePet(params);
-                case "join <ID> [WHITE|BLACK}" -> listPets();
-                case "observe <ID>" -> signOut();
-                case "logout" -> adoptPet(params);
-                case "quit" -> "quit";
-                default -> help();
-            };
+            return "Error: " + e.getMessage();
         }
     }
-    }
 
-    public String signIn(String... params) throws ResponseException {
-        if (params.length >= 1) {
-            state = State.SIGNEDIN;
-            visitorName = String.join("-", params);
-            ws.enterPetShop(visitorName);
-            return String.format("You signed in as %s.", visitorName);
+    private String login(String[] params) throws Exception
+    {
+        if (params.length != 2) {
+            return "Usage: login <username> <password>";
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
+        auth = server.login(params[0], params[1]);
+        state = State.SIGNEDIN;
+        return "Logged in as " + auth.username();
     }
 
     public String rescuePet(String... params) throws ResponseException {
