@@ -83,6 +83,15 @@ public class ChessClient {
             return "Error: " + e.getMessage();
         }
     }
+    private String register(String[] params) throws Exception
+    {
+        if (params.length != 3) {
+            return "Usage: register <username> <password> <email>";
+        }
+        auth = server.register(params[0], params[1], params[2]);
+        state = State.SIGNEDIN;
+        return "Registered as " + auth.username();
+    }
 
     private String login(String[] params) throws Exception
     {
@@ -144,11 +153,12 @@ public class ChessClient {
         return buffer.toString();
     }
 
-    public String signOut() throws ResponseException {
+    private String logout() throws Exception {
         assertSignedIn();
-        ws.leavePetShop(visitorName);
+        server.logout(auth.authToken());
+        auth = null;
         state = State.SIGNEDOUT;
-        return String.format("%s left the shop", visitorName);
+        return "Logged out successfully";
     }
 
     private Pet getPet(int id) throws ResponseException {
