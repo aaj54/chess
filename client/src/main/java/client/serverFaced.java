@@ -8,6 +8,7 @@ import java.net.http.*;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Collection;
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
@@ -34,22 +35,36 @@ public class ServerFacade {
         return handleResponse(response, AuthData.class);
     }
 
-    public void logout(String authToken) throws Exception {
+    public void logout(String authToken) throws Exception
+    {
         var path = String.format("/pet/%s", authToken);
         var request = buildRequest("DELETE", "/session", null, authToken);
         var response = sendRequest(request);
         handleResponse(response, null);
     }
 
-    public void deleteAllPets() throws ResponseException {
-        var request = buildRequest("DELETE", "/pet", null);
+    public void clear() throws Exception {
+        var request = buildRequest("DELETE", "/db", null, null);
         sendRequest(request);
     }
 
-    public PetList listPets() throws ResponseException {
-        var request = buildRequest("GET", "/pet", null);
+    public Collection<GameData> listGames(String authToken) throws Exception
+    {
+        record ListGamesResponse(Collection<GameData> games) {}
+        var request = buildRequest("GET", "/game", null, authToken);
         var response = sendRequest(request);
-        return handleResponse(response, PetList.class);
+        var res = handleResponse(response, ListGamesResponse.class);
+        return res.games();
+        }
+
+    public int createGame(String authToken, String gameName) throws Exception
+    {
+        record CreateGameRequest(String gameName) {}
+        record CreateGameResponse(int gameID) {}
+        var request = buildRequest("POST", "/game", new CreateGameRequest(gameName), authToken);
+        var response = sendRequest(request);
+        var res = handleResponse(response, CreateGameResponse.class);
+        return res.gameID();
     }
 
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
