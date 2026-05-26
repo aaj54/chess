@@ -127,19 +127,21 @@ public class ChessClient {
 
     private String playGame(String[] params) throws Exception {
         assertSignedIn();
-        if (params.length != 2)
-        {
+        if (params.length != 2) {
             return "Usage: play <game number> <WHITE|BLACK>";
         }
         int idx;
         try {
-            idx = Integer.parseInt(params[0])-1;
+            idx = Integer.parseInt(params[0]) - 1;
         } catch (NumberFormatException e) {
             return "Invalid game number";
         }
-        if (gameList.isEmpty())
-        {
-            return "Please create a game";
+        if (gameList.isEmpty()) {
+            var games = server.listGames(auth.authToken());
+            gameList = new ArrayList<>(games);
+        }
+        if (gameList.isEmpty()) {
+            return "No games available";
         }
         if (idx < 0 || idx >= gameList.size()) {
             return "Invalid game number";
@@ -152,31 +154,31 @@ public class ChessClient {
         server.joinGame(auth.authToken(), color, gameID);
         DrawBoard.draw(color.equals("BLACK"));
         return "";
-
     }
 
     private String observeGame(String[] params) throws Exception {
         assertSignedIn();
-        if (params.length != 1)
-        {
+        if (params.length != 1) {
             return "Usage: observe <game number>";
         }
         int idx;
         try {
-            idx = Integer.parseInt(params[0])-1;
+            idx = Integer.parseInt(params[0]) - 1;
         } catch (NumberFormatException e) {
             return "Invalid game number";
         }
-        if (gameList.isEmpty())
-        {
-            return "Please create a game";
+        if (gameList.isEmpty()) {
+            var games = server.listGames(auth.authToken());
+            gameList = new ArrayList<>(games);
+        }
+        if (gameList.isEmpty()) {
+            return "No games available";
         }
         if (idx < 0 || idx >= gameList.size()) {
             return "Invalid game number";
         }
         DrawBoard.draw(false);
         return "";
-
     }
 
     private String logout() throws Exception {

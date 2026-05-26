@@ -31,7 +31,9 @@ public class DrawBoard {
                 ChessPiece piece = board.getPiece(pos);
                 System.out.print(bg + getPieceStr(piece));
             }
+            System.out.println(SET_BG_COLOR_BLUE + " " + currentRow + " " + RESET_BG_COLOR);
         }
+        printColHeaders(cols, flip);
     }
     private static void printColHeaders(String[] cols, boolean flip) {
         System.out.print(SET_BG_COLOR_BLUE + "   ");
@@ -45,18 +47,17 @@ public class DrawBoard {
 
     private static String getPieceStr(ChessPiece piece) {
         if (piece == null) {
-            return EMPTY;
+            return "   ";
         }
         boolean isWhite = piece.getTeamColor() == ChessGame.TeamColor.WHITE;
         String color = isWhite ? SET_TEXT_COLOR_RED : SET_TEXT_COLOR_BLUE;
-        String symbol = switch (piece.getPieceType())
-        {
-            case KING -> isWhite ? WHITE_KING : BLACK_KING;
-            case QUEEN -> isWhite ? WHITE_QUEEN : BLACK_QUEEN;
-            case ROOK -> isWhite ? WHITE_ROOK: BLACK_ROOK;
-            case BISHOP -> isWhite ? WHITE_BISHOP: BLACK_BISHOP;
-            case KNIGHT -> isWhite ? WHITE_KNIGHT : BLACK_KNIGHT;
-            case PAWN -> isWhite ? WHITE_PAWN : BLACK_PAWN;
+        String symbol = switch (piece.getPieceType()) {
+            case KING -> " K ";
+            case QUEEN -> " Q ";
+            case ROOK -> " R ";
+            case BISHOP -> " B ";
+            case KNIGHT -> " N ";
+            case PAWN -> " P ";
         };
         return color + symbol + RESET_TEXT_COLOR;
     }
