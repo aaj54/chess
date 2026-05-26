@@ -73,7 +73,7 @@ public class ChessClient {
             }
         } catch (Exception e)
         {
-            return "Error: " + e.getMessage();
+            return e.getMessage();
         }
     }
     private String register(String[] params) throws Exception
