@@ -29,8 +29,8 @@ public class ServerFacade {
 
     public AuthData login(String username, String password) throws Exception
     {
-        record loginRequest(String username, String password) {}
-        var request = buildRequest("POST", "/session", new loginRequest(username,password), null);
+        record LoginRequest(String username, String password) {}
+        var request = buildRequest("POST", "/session", new LoginRequest(username,password), null);
         var response = sendRequest(request);
         return handleResponse(response, AuthData.class);
     }

@@ -103,6 +103,7 @@ public class ChessClient {
         }
         String gameName = String.join(" ", params);
         server.createGame(auth.authToken(), gameName);
+        gameList = new ArrayList<>(server.listGames(auth.authToken()));
         return "Created game: " + gameName;
     }
 
@@ -125,58 +126,50 @@ public class ChessClient {
         return gameInfo.toString();
     }
 
-    private String playGame(String[] params) throws Exception {
+    private GameData getGameFromParams(String[] params, int expectedLength) throws Exception {
         assertSignedIn();
-        if (params.length != 2) {
-            return "Usage: play <game number> <WHITE|BLACK>";
+
+        if (params.length != expectedLength) {
+            throw new Exception(expectedLength == 2
+                    ? "Usage: play <game number> <WHITE|BLACK>"
+                    : "Usage: observe <game number>");
         }
+
         int idx;
         try {
             idx = Integer.parseInt(params[0]) - 1;
         } catch (NumberFormatException e) {
-            return "Invalid game number";
+            throw new Exception("Invalid game number");
         }
+
+        gameList = new ArrayList<>(server.listGames(auth.authToken()));
+
         if (gameList.isEmpty()) {
-            var games = server.listGames(auth.authToken());
-            gameList = new ArrayList<>(games);
-        }
-        if (gameList.isEmpty()) {
-            return "No games available";
+            throw new Exception("No games available");
         }
         if (idx < 0 || idx >= gameList.size()) {
-            return "Invalid game number";
+            throw new Exception("Invalid game number");
         }
+
+        return gameList.get(idx);
+    }
+
+    private String playGame(String[] params) throws Exception {
+        GameData game = getGameFromParams(params, 2);
+
         String color = params[1].toUpperCase();
         if (!color.equals("WHITE") && !color.equals("BLACK")) {
             return "Color must be WHITE or BLACK";
         }
-        int gameID = gameList.get(idx).gameID();
-        server.joinGame(auth.authToken(), color, gameID);
+
+        server.joinGame(auth.authToken(), color, game.gameID());
         DrawBoard.draw(color.equals("BLACK"));
         return "";
     }
 
     private String observeGame(String[] params) throws Exception {
-        assertSignedIn();
-        if (params.length != 1) {
-            return "Usage: observe <game number>";
-        }
-        int idx;
-        try {
-            idx = Integer.parseInt(params[0]) - 1;
-        } catch (NumberFormatException e) {
-            return "Invalid game number";
-        }
-        if (gameList.isEmpty()) {
-            var games = server.listGames(auth.authToken());
-            gameList = new ArrayList<>(games);
-        }
-        if (gameList.isEmpty()) {
-            return "No games available";
-        }
-        if (idx < 0 || idx >= gameList.size()) {
-            return "Invalid game number";
-        }
+        GameData game = getGameFromParams(params, 1);
+
         DrawBoard.draw(false);
         return "";
     }
