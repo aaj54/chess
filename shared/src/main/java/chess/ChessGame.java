@@ -387,6 +387,16 @@ public class ChessGame {
         return Objects.equals(getBoard(), chessGame.getBoard()) && currentPlayerTurn == chessGame.currentPlayerTurn;
     }
 
+    private boolean gameOver = false;
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(getBoard(), currentPlayerTurn);
