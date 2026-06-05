@@ -25,7 +25,7 @@ public class DrawBoard {
             for (int c = 0; c < 8; c++) {
                 int currentCol = flip ? 7 - c + 1 : c + 1;
                 boolean isLight = (currentRow + currentCol) % 2 == 0;
-                String bg = isLight ? SET_BG_COLOR_WHITE : SET_BG_COLOR_DARK_GREY;
+                String bg = isLight ? SET_BG_COLOR_DARK_GREY : SET_BG_COLOR_WHITE;
 
                 ChessPosition pos = new ChessPosition(currentRow, currentCol);
                 ChessPiece piece = board.getPiece(pos);
