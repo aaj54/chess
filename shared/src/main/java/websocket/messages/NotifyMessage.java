@@ -1,16 +1,15 @@
 package websocket.messages;
 
-import model.GameData;
 
 public class NotifyMessage extends ServerMessage{
-    private final GameData game;
+    private final String mess;
 
-    public NotifyMessage(GameData game) {
-        super(ServerMessageType.LOAD_GAME);
-        this.game = game;
+    public NotifyMessage(String mess) {
+        super(ServerMessageType.NOTIFICATION);
+        this.mess = mess;
     }
 
-    public GameData getGame() {
-        return game;
+    public String getMess() {
+        return mess;
     }
 }
