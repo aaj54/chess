@@ -9,24 +9,38 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    public final ConcurrentHashMap<Session, Session> connections = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, ArrayList<Session>> gameSessions = new ConcurrentHashMap<>();
 
-    public void add(Session session) {
-        connections.put(session, session);
+    public void add(int gameID, Session session) {
+        gameSessions.computeIfAbsent(gameID, k -> new ArrayList<>()).add(session);
     }
 
-    public void remove(Session session) {
-        connections.remove(session);
+    public void remove(int gameID, Session session) {
+        var sessions = gameSessions.get(gameID);
+        if (sessions != null) {
+            sessions.remove(session);
+        }
     }
 
-    public void broadcast(Session excludeSession, Notification notification) throws IOException {
-        String msg = notification.toString();
-        for (Session c : connections.values()) {
+    public void broadcast(int gameID, Session excludeSession, ServerMessage notification) throws IOException {
+        String msg = new Gson().toJson(notification);
+        var sessions = gameSessions.get(gameID);
+        if (sessions == null) {
+            return;
+        }
+        for (Session c : new ArrayList<>(sessions)) {
             if (c.isOpen()) {
                 if (!c.equals(excludeSession)) {
                     c.getRemote().sendString(msg);
                 }
             }
+        }
+    }
+
+    public void sendToSession(Session session, ServerMessage message) throws IOException {
+        String json = new Gson().toJson(message);
+        if (session.isOpen()) {
+            session.getRemote().sendString(json);
         }
     }
 }
