@@ -189,10 +189,38 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    private void resign(String visitorName, Session session) throws IOException {
-        var message = String.format("%s left the shop", visitorName);
-        var notification = new Notification(Notification.Type.DEPARTURE, message);
-        connections.broadcast(session, notification);
-        connections.remove(session);
+    private void resign(UserGameCommand command, Session session) throws IOException {
+        try {
+            AuthData auth = dataAccess.getAuth(command.getAuthToken());
+            if (auth == null) {
+                connections.sendToSession(session, new ErrorMessage("Error: unauthorized"));
+                return;
+            }
+            GameData gameData = dataAccess.getGame(command.getGameID());
+            if (gameData == null) {
+                connections.sendToSession(session, new ErrorMessage("Error: game not found"));
+                return;
+            }
+            String username = auth.username();
+            ChessGame game = gameData.game();
+
+            if (!username.equals(gameData.whiteUsername()) &&
+                    !username.equals(gameData.blackUsername())) {
+                connections.sendToSession(session, new ErrorMessage("Error: observers cannot resign"));
+                return;
+            }
+            if (game.isGameOver()) {
+                connections.sendToSession(session, new ErrorMessage("Error: game is already over"));
+                return;
+            }
+
+            game.setGameOver(true);
+            dataAccess.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(),
+                    gameData.blackUsername(), gameData.gameName(), game));
+            connections.broadcast(command.getGameID(), null,
+                    new NotifyMessage(username + " resigned. Game over."));
+        } catch (DataAccessException e) {
+            connections.sendToSession(session, new ErrorMessage("Error: " + e.getMessage()));
+        }
     }
 }
