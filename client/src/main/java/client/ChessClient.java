@@ -4,17 +4,54 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+
+import chess.ChessGame;
+import com.google.gson.Gson;
 import model.*;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadMessage;
+import websocket.messages.NotifyMessage;
+import websocket.messages.ServerMessage;
+
+import javax.swing.*;
 
 
-public class ChessClient {
+public class ChessClient implements WebSocketFacade.NotificationHandler {
     private final ServerFacade server;
+    private WebSocketFacade ws;
     private AuthData auth = null;
     private List<GameData> gameList = new ArrayList<>();
     private State state = State.SIGNEDOUT;
+    private GameData currentGame = null;
+    private ChessGame.TeamColor playerColor = null;
+    private final int port;
+    private final Gson gson = new Gson();
 
     public ChessClient(int port) {
+        this.port = port;
         server = new ServerFacade(port);
+    }
+
+    @Override
+    public void handleMessage(String message) {
+        ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
+        switch (serverMessage.getServerMessageType()) {
+            case LOAD_GAME -> {
+                LoadMessage loadGame = gson.fromJson(message, LoadMessage.class);
+                currentGame = loadGame.getGame();
+                DrawBoard.draw(playerColor == ChessGame.TeamColor.BLACK);
+            }
+            case NOTIFICATION -> {
+                NotifyMessage notification = gson.fromJson(message, NotifyMessage.class);
+                System.out.println("\n*** " + notification.getMess() + " ***");
+                printPrompt();
+            }
+            case ERROR -> {
+                ErrorMessage error = gson.fromJson(message, ErrorMessage.class);
+                System.out.println("\nError: " + error.getErrMess());
+                printPrompt();
+            }
+        }
     }
 
     public void run() {
@@ -60,13 +97,23 @@ public class ChessClient {
                     case "quit" -> "quit";
                     default -> help();
                 };
-            } else {
+            } else if (state == State.SIGNEDIN) {
                 return switch (cmd) {
                     case "create" -> create(params);
                     case "list" -> list();
                     case "play" -> playGame(params);
                     case "observe" -> observeGame(params);
                     case "logout" -> logout();
+                    case "quit" -> "quit";
+                    default -> help();
+                };
+            } else {
+                return switch (cmd) {
+                    case "redraw" -> redraw();
+                    case "leave" -> leave();
+                    case "move" -> makeMove(params);
+                    case "resign" -> resign();
+                    case "highlight" -> highlight(params);
                     case "quit" -> "quit";
                     default -> help();
                 };
@@ -163,14 +210,19 @@ public class ChessClient {
         }
 
         server.joinGame(auth.authToken(), color, game.gameID());
-        DrawBoard.draw(color.equals("BLACK"));
+        playerColor = color.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+        ws = new WebSocketFacade(port, this);
+        ws.connect(auth.authToken(), game.gameID());
+        state = State.GAMEPLAY;
         return "";
     }
 
     private String observeGame(String[] params) throws Exception {
         GameData game = getGameFromParams(params, 1);
-
-        DrawBoard.draw(false);
+        playerColor = null;
+        ws = new WebSocketFacade(port, this);
+        ws.connect(auth.authToken(), game.gameID());
+        state = State.GAMEPLAY;
         return "";
     }
 
@@ -180,6 +232,14 @@ public class ChessClient {
         auth = null;
         state = State.SIGNEDOUT;
         return "Logged out successfully";
+    }
+
+    private String redraw() {
+        if (currentGame == null) {
+            return "No game to redraw";
+        }
+        DrawBoard.draw(playerColor == ChessGame.TeamColor.BLACK);
+        return "";
     }
 
 
