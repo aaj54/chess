@@ -6,6 +6,7 @@ import dataaccess.*;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.json.JsonMapper;
+import server.websocket.WebSocketHandler;
 import service.*;
 import java.lang.reflect.Type;
 
@@ -46,6 +47,12 @@ public class Server {
     }
 
     private void registerEndpoints() {
+        WebSocketHandler wsHandler = new WebSocketHandler(dataAccess);
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(wsHandler);
+            ws.onMessage(wsHandler);
+            ws.onClose(wsHandler);
+        });
         javalin.delete("/db", this::handleClear);
         javalin.post("/user", this::handleRegister);
         javalin.post("/session", this::handleLogin);
@@ -167,6 +174,7 @@ public class Server {
         javalin.start(desiredPort);
         return javalin.port();
     }
+
 
     public void stop() {
         javalin.stop();
