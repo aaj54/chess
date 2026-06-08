@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Scanner;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import model.*;
 import websocket.messages.ErrorMessage;
@@ -240,6 +243,56 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
         }
         DrawBoard.draw(playerColor == ChessGame.TeamColor.BLACK);
         return "";
+    }
+
+    private String leave() throws Exception {
+        ws.leave(auth.authToken(), currentGame.gameID());
+        ws.close();
+        ws = null;
+        currentGame = null;
+        playerColor = null;
+        state = State.SIGNEDIN;
+        return "Left the game";
+    }
+
+    private String makeMove(String[] params) throws Exception {
+        if (params.length != 2) {
+            return "Usage: move <from> <to> (e.g. move e2 e4)";
+        }
+        ChessPosition from = parsePosition(params[0]);
+        ChessPosition to = parsePosition(params[1]);
+        if (from == null || to == null) {
+            return "Invalid position. Use format like e2, a1, h8";
+        }
+        ChessPiece.PieceType promotion = null;
+        if (params.length >= 3) {
+            promotion = parsePromotion(params[2]);
+        }
+        ChessMove move = new ChessMove(from, to, promotion);
+        ws.makeMove(auth.authToken(), currentGame.gameID(), move);
+        return "";
+    }
+
+    private ChessPosition parsePosition(String pos) {
+        if (pos.length() != 2) {
+            return null;
+        }
+        int col = pos.charAt(0) - 'a' + 1;
+        int row = pos.charAt(1) - '0';
+        if (col < 1 || col > 8 || row < 1 || row > 8) {
+            return null;
+        }
+        return new ChessPosition(row, col);
+    }
+
+    private ChessPiece.PieceType parsePromotion(String piece) {
+        return switch (piece.toUpperCase()) {
+            case "Q" -> ChessPiece.PieceType.QUEEN;
+            case "R" -> ChessPiece.PieceType.ROOK;
+            case "B" -> ChessPiece.PieceType.BISHOP;
+            case "N" -> ChessPiece.PieceType.KNIGHT;
+            default -> null;
+        };
     }
 
 
