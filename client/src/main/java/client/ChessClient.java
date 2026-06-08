@@ -273,6 +273,17 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
         return "";
     }
 
+    private String resign() throws Exception {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Are you sure you want to resign? (yes/no): ");
+        String confirm = scanner.nextLine().trim().toLowerCase();
+        if (confirm.equals("yes")) {
+            ws.resign(auth.authToken(), currentGame.gameID());
+            return "You resigned";
+        }
+        return "Resignation cancelled";
+    }
+
     private ChessPosition parsePosition(String pos) {
         if (pos.length() != 2) {
             return null;
