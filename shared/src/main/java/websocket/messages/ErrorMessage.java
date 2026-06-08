@@ -1,16 +1,15 @@
 package websocket.messages;
 
-import model.GameData;
 
 public class ErrorMessage extends ServerMessage {
-    private final String errMess;
+    private final String errorMessage;
 
-    public ErrorMessage(String errMess) {
+    public ErrorMessage(String errorMessage) {
         super(ServerMessageType.ERROR);
-        this.errMess = errMess;
+        this.errorMessage = errorMessage;
     }
 
     public String getErrMess() {
-        return errMess;
+        return errorMessage;
     }
 }

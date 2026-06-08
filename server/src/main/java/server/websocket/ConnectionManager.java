@@ -22,8 +22,8 @@ public class ConnectionManager {
         }
     }
 
-    public void broadcast(int gameID, Session excludeSession, ServerMessage notification) throws IOException {
-        String msg = new Gson().toJson(notification);
+    public void broadcast(int gameID, Session excludeSession, ServerMessage message) throws IOException {
+        String json = new Gson().toJson(message, message.getClass());
         var sessions = gameSessions.get(gameID);
         if (sessions == null) {
             return;
@@ -31,14 +31,14 @@ public class ConnectionManager {
         for (Session c : new ArrayList<>(sessions)) {
             if (c.isOpen()) {
                 if (!c.equals(excludeSession)) {
-                    c.getRemote().sendString(msg);
+                    c.getRemote().sendString(json);
                 }
             }
         }
     }
 
     public void sendToSession(Session session, ServerMessage message) throws IOException {
-        String json = new Gson().toJson(message);
+        String json = new Gson().toJson(message, message.getClass());
         if (session.isOpen()) {
             session.getRemote().sendString(json);
         }
