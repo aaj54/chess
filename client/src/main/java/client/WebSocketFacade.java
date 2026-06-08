@@ -2,7 +2,6 @@ package client;
 
 import chess.ChessMove;
 import com.google.gson.Gson;
-import com.sun.nio.sctp.NotificationHandler;
 import jakarta.websocket.ContainerProvider;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.EndpointConfig;
@@ -14,23 +13,16 @@ import websocket.commands.UserGameCommand;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Scanner;
 
 public class WebSocketFacade extends Endpoint {
     public Session session;
-    private final NotificationHandler notificationHandler;
     private final Gson gson = new Gson();
 
     public WebSocketFacade(int port, NotificationHandler notificationHandler) throws Exception {
-        this.notificationHandler = notificationHandler;
         URI uri = new URI("ws://localhost:" + port + "/ws");
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         session = container.connectToServer(this, uri);
-        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-            public void onMessage(String message) {
-                notificationHandler.handleMessage(message);
-            }
-        });
+        this.session.addMessageHandler((MessageHandler.Whole<String>) notificationHandler::handleMessage);
     }
 
     @Override

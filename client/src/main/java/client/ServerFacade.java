@@ -53,6 +53,7 @@ public class ServerFacade {
         var request = buildRequest("GET", "/game", null, authToken);
         var response = sendRequest(request);
         var res = handleResponse(response, ListGamesResponse.class);
+        assert res != null;
         return res.games();
         }
 
@@ -63,6 +64,7 @@ public class ServerFacade {
         var request = buildRequest("POST", "/game", new CreateGameRequest(gameName), authToken);
         var response = sendRequest(request);
         var res = handleResponse(response, CreateGameResponse.class);
+        assert res != null;
         return res.gameID();
     }
 
