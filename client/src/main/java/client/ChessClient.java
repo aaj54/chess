@@ -1,9 +1,6 @@
 package client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 import chess.ChessGame;
 import chess.ChessMove;
@@ -79,9 +76,12 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
     }
 
     private void printPrompt() {
-        System.out.print(state == State.SIGNEDOUT ? "\n[LOGGED_OUT] >>> " : "\n[LOGGED_IN] >>> ");
+        System.out.print(switch (state) {
+            case SIGNEDOUT -> "\n[LOGGED_OUT] >>> ";
+            case SIGNEDIN -> "\n[LOGGED_IN] >>> ";
+            case GAMEPLAY -> "\n[GAMEPLAY] >>> ";
+        });
     }
-
 
     public String eval(String input) {
         if (input == null || input.isBlank())
@@ -257,7 +257,7 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
 
     private String makeMove(String[] params) throws Exception {
         if (params.length != 2) {
-            return "Usage: move <from> <to> (e.g. move e2 e4)";
+            return "Usage: move <from> <to>";
         }
         ChessPosition from = parsePosition(params[0]);
         ChessPosition to = parsePosition(params[1]);
@@ -306,6 +306,24 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
         };
     }
 
+    private String highlight(String[] params) {
+        if (params.length != 1) {
+            return "Usage: highlight <position> ";
+        }
+        if (currentGame == null) {
+            return "No game in progress";
+        }
+        ChessPosition pos = parsePosition(params[0]);
+        if (pos == null) {
+            return "Invalid position. Use format like e2, a1, h8";
+        }
+        ChessGame game = currentGame.game();
+        Collection<ChessMove> moves = game.validMoves(pos);
+        DrawBoard.drawWithHighlights(playerColor == ChessGame.TeamColor.BLACK,
+                currentGame.game().getBoard(), pos, moves); //need to implement
+        return "";
+    }
+
 
     public String help() {
         if (state == State.SIGNEDOUT) {
@@ -317,7 +335,8 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
                         help
                     """;
         }
-        return """
+        else if (state == State.SIGNEDIN) {
+            return """
                 Commands:
                     create <game name>
                     list
@@ -327,6 +346,19 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
                     quit
                     help
                 """;
+        }
+        else {
+            return """
+                Commands:
+                    redraw
+                    move <from> <to> (e.g. move e2 e4)
+                    highlight <position> (e.g. highlight e2)
+                    leave
+                    resign
+                    help
+                """;
+
+        }
     }
 
     private void assertSignedIn() throws Exception {
