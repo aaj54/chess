@@ -15,23 +15,34 @@ import java.io.IOException;
 import java.net.URI;
 
 public class WebSocketFacade extends Endpoint {
-    public Session session;
     private final Gson gson = new Gson();
+    private final NotificationHandler notificationHandler;
+    private Session session;
 
     public WebSocketFacade(int port, NotificationHandler notificationHandler) throws Exception {
+        this.notificationHandler = notificationHandler;
         URI uri = new URI("ws://localhost:" + port + "/ws");
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        session = container.connectToServer(this, uri);
-        this.session.addMessageHandler((MessageHandler.Whole<String>) notificationHandler::handleMessage);
+        container.connectToServer(this, uri);
+        // wait for onOpen to set session
+        Thread.sleep(100);
     }
 
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
+        this.session = session;
+        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+            @Override
+                    public void onMessage(String message) {
+            notificationHandler.handleMessage(message);
+        }
+        });
     }
 
     public void connect(String authToken, int gameID) throws IOException {
         var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
-        session.getBasicRemote().sendText(gson.toJson(command));
+        String json = gson.toJson(command);
+        session.getBasicRemote().sendText(json);
     }
 
     public void makeMove(String authToken, int gameID, ChessMove move) throws IOException {

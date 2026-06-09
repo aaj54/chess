@@ -34,23 +34,28 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
 
     @Override
     public void handleMessage(String message) {
-        ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
-        switch (serverMessage.getServerMessageType()) {
-            case LOAD_GAME -> {
-                LoadMessage loadGame = gson.fromJson(message, LoadMessage.class);
-                currentGame = loadGame.getGame();
-                DrawBoard.draw(playerColor == ChessGame.TeamColor.BLACK);
+        try {
+            ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
+
+            switch (serverMessage.getServerMessageType()) {
+                case LOAD_GAME -> {
+                    LoadMessage loadGame = gson.fromJson(message, LoadMessage.class);
+                    currentGame = loadGame.getGame();
+                    DrawBoard.draw(currentGame.game().getBoard(), playerColor == ChessGame.TeamColor.BLACK);
+                }
+                case NOTIFICATION -> {
+                    NotifyMessage notification = gson.fromJson(message, NotifyMessage.class);
+                    System.out.println("\n*** " + notification.getMess() + " ***");
+                    printPrompt();
+                }
+                case ERROR -> {
+                    ErrorMessage error = gson.fromJson(message, ErrorMessage.class);
+                    System.out.println("\n " + error.getErrMess());
+                    printPrompt();
+                }
             }
-            case NOTIFICATION -> {
-                NotifyMessage notification = gson.fromJson(message, NotifyMessage.class);
-                System.out.println("\n*** " + notification.getMess() + " ***");
-                printPrompt();
-            }
-            case ERROR -> {
-                ErrorMessage error = gson.fromJson(message, ErrorMessage.class);
-                System.out.println("\nError: " + error.getErrMess());
-                printPrompt();
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -241,7 +246,7 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
         if (currentGame == null) {
             return "No game to redraw";
         }
-        DrawBoard.draw(playerColor == ChessGame.TeamColor.BLACK);
+        DrawBoard.draw(currentGame.game().getBoard(), playerColor == ChessGame.TeamColor.BLACK);
         return "";
     }
 
@@ -256,8 +261,8 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
     }
 
     private String makeMove(String[] params) throws Exception {
-        if (params.length != 2) {
-            return "Usage: move <from> <to>";
+        if (params.length < 2 || params.length > 3) {
+            return "Usage: move <from> <to> [promotion piece (Q/R/B/N)]";
         }
         ChessPosition from = parsePosition(params[0]);
         ChessPosition to = parsePosition(params[1]);
@@ -265,7 +270,7 @@ public class ChessClient implements WebSocketFacade.NotificationHandler {
             return "Invalid position. Use format like e2, a1, h8";
         }
         ChessPiece.PieceType promotion = null;
-        if (params.length >= 3) {
+        if (params.length == 3) {
             promotion = parsePromotion(params[2]);
         }
         ChessMove move = new ChessMove(from, to, promotion);

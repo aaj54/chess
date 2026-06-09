@@ -10,14 +10,13 @@ import java.util.Set;
 import static ui.EscapeSequences.*;
 
 public class DrawBoard {
-    public static void draw(boolean blackPerspective)
-    {
-        ChessBoard board = new ChessBoard();
-        board.resetBoard();
+    public static void draw(ChessBoard board, boolean blackPerspective) {
         System.out.println();
         drawBoard(board, blackPerspective);
         System.out.println();
     }
+
+
     private static void drawBoard(ChessBoard board, boolean flip)
     {
         String[] cols = {"a", "b", "c", "d", "e", "f", "g", "h"};

@@ -1,6 +1,8 @@
 package server.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
@@ -28,7 +30,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleConnect(WsConnectContext ctx) {
-        System.out.println("Websocket connected");
         ctx.enableAutomaticPings();
     }
 
@@ -53,7 +54,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleClose(WsCloseContext ctx) {
-        System.out.println("Websocket closed");
     }
 
     private void connect(UserGameCommand command, Session session) throws IOException {
@@ -161,8 +161,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             dataAccess.updateGame(updGame);
 
             connections.broadcast(command.getGameID(), null, new LoadMessage(updGame));
+            ChessMove move = command.getMove();
+            String moveString =
+                    posToChess(move.getStartPosition()) + " to " + posToChess(move.getEndPosition());
+
             connections.broadcast(command.getGameID(), session,
-                    new NotifyMessage(username + " made move: " + command.getMove()));
+                    new NotifyMessage(username + " moved " + moveString));
 
             ChessGame.TeamColor opponent = color == ChessGame.TeamColor.WHITE ?
                     ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
@@ -187,6 +191,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         } catch (DataAccessException e) {
             connections.sendToSession(session, new ErrorMessage("Error: " + e.getMessage()));
         }
+    }
+
+    private String posToChess(ChessPosition pos) {
+        char file = (char) ('a' + pos.getColumn() - 1);
+        int rank = pos.getRow();
+        return "" + file + rank;
     }
 
     private void resign(UserGameCommand command, Session session) throws IOException {
